@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.compose) // <-- Aquí SÍ se aplica
     alias(libs.plugins.google.devtools.ksp)
 }
 
@@ -15,10 +15,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    // ... el resto del archivo se mantiene igual
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -41,7 +40,7 @@ android {
 }
 
 dependencies {
-
+    // ... todas tus dependencias se mantienen igual
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -50,7 +49,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    // implementation(libs.androidx.room.common.jvm) // <-- LÍNEA ELIMINADA
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -60,13 +58,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
-
     // ViewModel Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-
     // Lifecycle Runtime Compose (para observar flujos de estado)
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-
     // Room Database
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")

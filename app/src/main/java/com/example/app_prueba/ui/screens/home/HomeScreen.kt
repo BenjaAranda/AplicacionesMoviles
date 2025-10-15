@@ -1,6 +1,6 @@
-// ruta: ui/screens/home/HomeScreen.kt
 package com.example.app_prueba.ui.screens.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,14 +15,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.app_prueba.data.model.Product
+import com.example.app_prueba.navigation.Routes
 import com.example.app_prueba.viewmodel.HomeViewModel
 import java.text.NumberFormat
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = viewModel()) {
     val uiState by homeViewModel.uiState.collectAsState()
 
     Scaffold(
@@ -72,7 +74,9 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
                         )
                     }
                     items(productsInCategory) { product ->
-                        ProductCard(product = product)
+                        ProductCard(product = product, onClick = {
+                            navController.navigate(Routes.ProductDetail.createRoute(product.code))
+                        })
                     }
                 }
             }
@@ -81,9 +85,11 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
 }
 
 @Composable
-fun ProductCard(product: Product) {
+fun ProductCard(product: Product, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f)
         ),
@@ -118,7 +124,6 @@ fun ProductCard(product: Product) {
 
 fun formatCurrency(price: Double): String {
     val format = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
-    // Para quitar los decimales y que se vea como $29.990 en vez de $29.990,00
     format.maximumFractionDigits = 0
     return format.format(price)
 }

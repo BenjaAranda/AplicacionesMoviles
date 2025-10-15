@@ -7,14 +7,16 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.app_prueba.data.model.Product
+import com.example.app_prueba.data.model.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Product::class], version = 1, exportSchema = false)
+@Database(entities = [Product::class, User::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun productDao(): ProductDao
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile
@@ -27,6 +29,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "level_up_gamer_database"
                 )
+                    .fallbackToDestructiveMigration()
                     .addCallback(DatabaseCallback(context))
                     .build()
                 INSTANCE = instance
@@ -46,17 +49,18 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         suspend fun populateDatabase(productDao: ProductDao) {
+            // La lista de productos
             val products = listOf(
-                Product("JM001", "Juegos de Mesa", "Catan", 29990.0, "Un clásico juego de estrategia donde los jugadores compiten por colonizar y expandirse en la isla de Catan."),
-                Product("JM002", "Juegos de Mesa", "Carcassonne", 24990.0, "Un juego de colocación de fichas donde los jugadores construyen el paisaje alrededor de la fortaleza medieval de Carcassonne."),
-                Product("AC001", "Accesorios", "Controlador Inalámbrico Xbox Series X", 59990.0, "Ofrece una experiencia de juego cómoda con botones mapeables y una respuesta táctil mejorada."),
-                Product("AC002", "Accesorios", "Auriculares Gamer HyperX Cloud II", 79990.0, "Proporcionan un sonido envolvente de calidad con un micrófono desmontable y almohadillas de espuma viscoelástica para mayor comodidad durante largas sesiones de juego."),
-                Product("CO001", "Consolas", "PlayStation 5", 549990.0, "La consola de última generación de Sony, que ofrece gráficos impresionantes y tiempos de carga ultrarrápidos para una experiencia de juego inmersiva."),
-                Product("CG001", "Computadores Gamers", "PC Gamer ASUS ROG Strix", 1299990.0, "Un potente equipo diseñado para los gamers más exigentes, equipado con los últimos componentes para ofrecer un rendimiento excepcional en cualquier juego."),
-                Product("SG001", "Sillas Gamers", "Silla Gamer Secretlab Titan", 349990.0, "Diseñada para el máximo confort, esta silla ofrece un soporte ergonómico y personalización ajustable para sesiones de juego prolongadas."),
-                Product("MS001", "Mouse", "Mouse Gamer Logitech G502 HERO", 49990.0, "Con sensor de alta precisión y botones personalizables, este mouse es ideal para gamers que buscan un control preciso y personalización."),
-                Product("MP001", "Mousepad", "Mousepad Razer Goliathus Extended Chroma", 29990.0, "Ofrece un área de juego amplia con iluminación RGB personalizable, asegurando una superficie suave y uniforme para el movimiento del mouse."),
-                Product("PP001", "Poleras Personalizadas", "Polera Gamer Personalizada 'Level-Up'", 14990.0, "Una camiseta cómoda y estilizada, con la posibilidad de personalizarla con tu gamer tag o diseño favorito.")
+                Product("JM001", "Juegos de Mesa", "Catan", 29990.0, "Un clásico juego de estrategia..."),
+                Product("JM002", "Juegos de Mesa", "Carcassonne", 24990.0, "Un juego de colocación de fichas..."),
+                Product("AC001", "Accesorios", "Controlador Inalámbrico Xbox Series X", 59990.0, "Ofrece una experiencia de juego cómoda..."),
+                Product("AC002", "Accesorios", "Auriculares Gamer HyperX Cloud II", 79990.0, "Proporcionan un sonido envolvente..."),
+                Product("CO001", "Consolas", "PlayStation 5", 549990.0, "La consola de última generación de Sony..."),
+                Product("CG001", "Computadores Gamers", "PC Gamer ASUS ROG Strix", 1299990.0, "Un potente equipo diseñado para los gamers..."),
+                Product("SG001", "Sillas Gamers", "Silla Gamer Secretlab Titan", 349990.0, "Diseñada para el máximo confort..."),
+                Product("MS001", "Mouse", "Mouse Gamer Logitech G502 HERO", 49990.0, "Con sensor de alta precisión..."),
+                Product("MP001", "Mousepad", "Mousepad Razer Goliathus Extended Chroma", 29990.0, "Ofrece un área de juego amplia..."),
+                Product("PP001", "Poleras Personalizadas", "Polera Gamer Personalizada 'Level-Up'", 14990.0, "Una camiseta cómoda y estilizada...")
             )
             productDao.insertAll(products)
         }

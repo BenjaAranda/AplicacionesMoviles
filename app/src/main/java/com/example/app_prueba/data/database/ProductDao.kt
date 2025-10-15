@@ -1,4 +1,3 @@
-// ruta: data/database/ProductDao.kt
 package com.example.app_prueba.data.database
 
 import androidx.room.Dao
@@ -15,4 +14,7 @@ interface ProductDao {
 
     @Query("SELECT * FROM products")
     fun getAllProducts(): Flow<List<Product>>
+
+    @Query("SELECT * FROM products WHERE code = :code LIMIT 1")
+    fun getProductByCode(code: String): Flow<Product?>
 }
