@@ -28,7 +28,8 @@ fun RegisterScreen(navController: NavController, vm: RegisterViewModel = viewMod
             value = vm.email,
             onValueChange = { vm.email = it },
             label = { Text("Correo Electrónico") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = vm.registerError != null // Opcional: marca el campo si hay error
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -49,6 +50,38 @@ fun RegisterScreen(navController: NavController, vm: RegisterViewModel = viewMod
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
+
+        // --- INICIO DE CAMBIOS ---
+
+        // Checkbox para mayor de edad
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Checkbox(
+                checked = vm.isOfLegalAge,
+                onCheckedChange = { vm.isOfLegalAge = it }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Soy mayor de edad")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Checkbox para estudiante Duoc
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Checkbox(
+                checked = vm.isDuocStudent,
+                onCheckedChange = { vm.isDuocStudent = it }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Soy estudiante Duoc")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // --- FIN DE CAMBIOS ---
 
         vm.registerError?.let {
             Text(it, color = MaterialTheme.colorScheme.error)
