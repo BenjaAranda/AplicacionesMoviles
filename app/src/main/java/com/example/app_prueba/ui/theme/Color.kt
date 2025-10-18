@@ -8,3 +8,7 @@ val White_Gamer = Color(0xFFFFFFFF)
 val Light_Gray_Gamer = Color(0xFFD3D3D3)
 val Electric_Blue = Color(0xFF1E90FF)
 val Neon_Green = Color(0xFF39FF14)
+
+
+val VerdeNeon = Color(0xFF39FF14)
+val MoradoNeon = Color(0xFF9013FE)
