@@ -1,4 +1,3 @@
-// ruta: data/database/AppDatabase.kt
 package com.example.app_prueba.data.database
 
 import android.content.Context
@@ -6,17 +5,19 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.app_prueba.data.model.CartItem
 import com.example.app_prueba.data.model.Product
 import com.example.app_prueba.data.model.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Product::class, User::class], version = 2, exportSchema = false)
+@Database(entities = [Product::class, User::class, CartItem::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun productDao(): ProductDao
     abstract fun userDao(): UserDao
+    abstract fun cartDao(): CartDao
 
     companion object {
         @Volatile
@@ -49,7 +50,6 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         suspend fun populateDatabase(productDao: ProductDao) {
-            // La lista de productos
             val products = listOf(
                 Product("JM001", "Juegos de Mesa", "Catan", 29990.0, "Un clásico juego de estrategia..."),
                 Product("JM002", "Juegos de Mesa", "Carcassonne", 24990.0, "Un juego de colocación de fichas..."),

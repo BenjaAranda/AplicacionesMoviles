@@ -7,4 +7,5 @@ sealed class Routes(val route: String) {
     object ProductDetail : Routes("product_detail/{productId}") {
         fun createRoute(productId: String) = "product_detail/$productId"
     }
+    object Cart : Routes("cart")
 }

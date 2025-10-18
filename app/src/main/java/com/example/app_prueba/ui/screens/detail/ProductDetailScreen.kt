@@ -1,5 +1,6 @@
 package com.example.app_prueba.ui.screens.detail
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -9,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +28,7 @@ fun formatCurrency(price: Double): String {
 @Composable
 fun ProductDetailScreen(productId: String, navController: NavController, vm: ProductDetailViewModel = viewModel()) {
     val state by vm.uiState.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -54,29 +57,23 @@ fun ProductDetailScreen(productId: String, navController: NavController, vm: Pro
                     .padding(paddingValues)
                     .padding(16.dp)
             ) {
-                // Aquí iría una imagen del producto
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Text(
                     text = product.name,
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Text(
                     text = product.category,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.tertiary
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-
                 Text(
                     text = product.description,
                     style = MaterialTheme.typography.bodyLarge
                 )
-                Spacer(modifier = Modifier.weight(1f)) // Empuja lo de abajo hacia el final
-
+                Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = formatCurrency(product.price),
                     style = MaterialTheme.typography.headlineMedium,
@@ -84,9 +81,11 @@ fun ProductDetailScreen(productId: String, navController: NavController, vm: Pro
                     modifier = Modifier.align(Alignment.End)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-
                 Button(
-                    onClick = { /* Lógica para añadir al carrito irá aquí */ },
+                    onClick = {
+                        vm.addToCart(product)
+                        Toast.makeText(context, "${product.name} añadido al carrito", Toast.LENGTH_SHORT).show()
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp)
                 ) {

@@ -1,10 +1,13 @@
-// ruta: navigation/AppNavigation.kt
 package com.example.app_prueba.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.app_prueba.ui.screens.cart.CartScreen
+import com.example.app_prueba.ui.screens.detail.ProductDetailScreen
 import com.example.app_prueba.ui.screens.home.HomeScreen
 import com.example.app_prueba.ui.screens.login.LoginScreen
 import com.example.app_prueba.ui.screens.register.RegisterScreen
@@ -24,6 +27,17 @@ fun AppNavigation() {
         }
         composable(Routes.Home.route) {
             HomeScreen(navController = navController)
+        }
+        composable(
+            route = Routes.ProductDetail.route,
+            arguments = listOf(navArgument("productId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")
+            requireNotNull(productId)
+            ProductDetailScreen(productId = productId, navController = navController)
+        }
+        composable(Routes.Cart.route) {
+            CartScreen(navController = navController)
         }
     }
 }
