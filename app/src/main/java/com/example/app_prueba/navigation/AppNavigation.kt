@@ -10,6 +10,7 @@ import com.example.app_prueba.ui.screens.cart.CartScreen
 import com.example.app_prueba.ui.screens.detail.ProductDetailScreen
 import com.example.app_prueba.ui.screens.home.HomeScreen
 import com.example.app_prueba.ui.screens.login.LoginScreen
+import com.example.app_prueba.ui.screens.profile.ProfileScreen
 import com.example.app_prueba.ui.screens.register.RegisterScreen
 
 @Composable
@@ -38,6 +39,9 @@ fun AppNavigation() {
         }
         composable(Routes.Cart.route) {
             CartScreen(navController = navController)
+        }
+        composable(Routes.Profile.route) {
+            ProfileScreen(navController = navController)
         }
     }
 }

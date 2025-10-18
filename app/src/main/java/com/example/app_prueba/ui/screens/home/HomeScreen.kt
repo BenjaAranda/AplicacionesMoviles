@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -45,10 +46,18 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                     titleContentColor = MaterialTheme.colorScheme.primary
                 ),
                 actions = {
+                    // Botón para el Carrito
                     IconButton(onClick = { navController.navigate(Routes.Cart.route) }) {
                         Icon(
                             imageVector = Icons.Default.ShoppingCart,
                             contentDescription = "Ir al Carrito"
+                        )
+                    }
+                    // BOTÓN AÑADIDO PARA EL PERFIL
+                    IconButton(onClick = { navController.navigate(Routes.Profile.route) }) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Ir al Perfil"
                         )
                     }
                 }
