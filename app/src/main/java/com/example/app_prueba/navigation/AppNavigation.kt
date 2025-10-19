@@ -17,10 +17,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.app_prueba.ui.components.TopBar
+import com.example.app_prueba.ui.screens.about.AboutUsScreen
+import com.example.app_prueba.ui.screens.blog.BlogScreen
 import com.example.app_prueba.ui.screens.cart.CartScreen
+import com.example.app_prueba.ui.screens.contact.ContactScreen
 import com.example.app_prueba.ui.screens.detail.ProductDetailScreen
 import com.example.app_prueba.ui.screens.home.HomeScreen
 import com.example.app_prueba.ui.screens.login.LoginScreen
+import com.example.app_prueba.ui.screens.products.ProductsScreen
 import com.example.app_prueba.ui.screens.profile.ProfileScreen
 import com.example.app_prueba.ui.screens.register.RegisterScreen
 
@@ -30,17 +35,31 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Lista de pantallas que tendrán la barra de navegación inferior
+    val topBarScreens = listOf(
+        Routes.Home.route,
+        Routes.Products.route,
+        Routes.AboutUs.route,
+        Routes.Blog.route,
+        Routes.Contact.route,
+        Routes.Cart.route,
+        Routes.Profile.route,
+        Routes.ProductDetail.route
+    )
+    val showTopBar = currentDestination?.route in topBarScreens
+
     val bottomBarScreens = listOf(
         Routes.Home.route,
         Routes.Cart.route,
         Routes.Profile.route
     )
-
-    // Determina si la pantalla actual debe mostrar la barra de navegación
     val showBottomBar = currentDestination?.route in bottomBarScreens
 
     Scaffold(
+        topBar = {
+            if (showTopBar) {
+                TopBar(navController = navController)
+            }
+        },
         bottomBar = {
             if (showBottomBar) {
                 val items = listOf(
@@ -72,23 +91,17 @@ fun AppNavigation() {
         NavHost(
             navController = navController,
             startDestination = Routes.Login.route,
-            modifier = Modifier.padding(innerPadding) // Aplica el padding del Scaffold
+            modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Routes.Login.route) {
-                LoginScreen(navController = navController)
-            }
-            composable(Routes.Register.route) {
-                RegisterScreen(navController = navController)
-            }
-            composable(Routes.Home.route) {
-                HomeScreen(navController = navController)
-            }
-            composable(Routes.Cart.route) {
-                CartScreen(navController = navController)
-            }
-            composable(Routes.Profile.route) {
-                ProfileScreen(navController = navController)
-            }
+            composable(Routes.Login.route) { LoginScreen(navController = navController) }
+            composable(Routes.Register.route) { RegisterScreen(navController = navController) }
+            composable(Routes.Home.route) { HomeScreen(navController = navController) }
+            composable(Routes.Products.route) { ProductsScreen() }
+            composable(Routes.AboutUs.route) { AboutUsScreen() }
+            composable(Routes.Blog.route) { BlogScreen() }
+            composable(Routes.Contact.route) { ContactScreen() }
+            composable(Routes.Cart.route) { CartScreen(navController = navController) }
+            composable(Routes.Profile.route) { ProfileScreen(navController = navController) }
             composable(
                 route = Routes.ProductDetail.route,
                 arguments = listOf(navArgument("productId") { type = NavType.StringType })
