@@ -1,5 +1,6 @@
 package com.example.app_prueba.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,6 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.app_prueba.navigation.Routes
+import com.example.app_prueba.R
 
 // Data class para definir cada elemento de la barra de navegación.
 data class NavItem(val label: String, val route: String)
@@ -55,14 +58,14 @@ fun TopBar(navController: NavController) {
             // ---- 1. LOGO (Izquierda) ----
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    // TODO: Aquí colocarás tu logo cuando te lo pase.
-                    // Por ahora, es un cuadrado de color para marcar el lugar.
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-                    .clickable { navController.navigate(Routes.Home.route) }, // El logo lleva a Inicio.
-                contentAlignment = Alignment.Center
+                    .height(40.dp)
+                    .clickable { navController.navigate(Routes.Home.route) }
             ) {
-                Text("L", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 24.sp)
+                Image(
+                    painter = painterResource(id = R.drawable.logo_main), // CONFIRMA que tu archivo se llama 'logo'
+                    contentDescription = "Logo de la Tienda",
+                    modifier = Modifier.fillMaxHeight()
+                )
             }
 
             // Espacio entre el logo y las opciones de navegación

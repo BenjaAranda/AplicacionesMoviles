@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,6 +41,7 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
         item {
             FiltersPanel(
                 state = uiState,
+                onSearchQueryChange = { vm.onSearchQueryChange(it) },
                 onCategorySelected = { vm.onCategorySelected(it) },
                 onMinPriceChange = { vm.onMinPriceChange(it) },
                 onMaxPriceChange = { vm.onMaxPriceChange(it) },
@@ -53,13 +56,24 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
                     CircularProgressIndicator()
                 }
             }
+        } else if (uiState.products.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillParentMaxSize()
+                        .padding(top = 100.dp), contentAlignment = Alignment.TopCenter
+                ) {
+                    Text("No se encontraron productos con esos filtros.")
+                }
+            }
         } else {
+            // Usamos LazyVerticalGrid dentro de la LazyColumn
             item {
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 160.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(( (uiState.products.size + 1) / 2 * 280 ).dp),
+                        .height(( (uiState.products.size + 1) / 2 * 280 ).dp), // Altura dinámica
                     contentPadding = PaddingValues(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -89,6 +103,7 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
 @Composable
 fun FiltersPanel(
     state: com.example.app_prueba.viewmodel.ProductsState,
+    onSearchQueryChange: (String) -> Unit,
     onCategorySelected: (String) -> Unit,
     onMinPriceChange: (String) -> Unit,
     onMaxPriceChange: (String) -> Unit,
@@ -99,6 +114,18 @@ fun FiltersPanel(
     var categoryMenuExpanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(16.dp)) {
+        // --- BARRA DE BÚSQUEDA AÑADIDA AQUÍ ---
+        OutlinedTextField(
+            value = state.searchQuery,
+            onValueChange = onSearchQueryChange,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Buscar producto...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        // ------------------------------------
+
         Text("Filtros", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
