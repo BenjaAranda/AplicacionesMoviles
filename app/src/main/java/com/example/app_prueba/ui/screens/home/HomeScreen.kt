@@ -1,128 +1,140 @@
 package com.example.app_prueba.ui.screens.home
 
+import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.app_prueba.data.model.Product
 import com.example.app_prueba.navigation.Routes
+import com.example.app_prueba.ui.components.Footer
 import com.example.app_prueba.viewmodel.HomeViewModel
+import com.example.app_prueba.viewmodel.ProductCategory
 import java.text.NumberFormat
 import java.util.Locale
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Search
 
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = viewModel()) {
     val uiState by homeViewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     if (uiState.isLoading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
     } else {
-        Column(modifier = Modifier.fillMaxSize()) {
-            SearchBarAndFilters(
-                searchQuery = uiState.searchQuery,
-                onSearchQueryChange = { homeViewModel.onSearchQueryChange(it) },
-                categories = uiState.categories,
-                selectedCategory = uiState.selectedCategory,
-                onCategorySelected = { homeViewModel.onCategorySelected(it) }
-            )
-
-            if (uiState.products.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No se encontraron productos.", style = MaterialTheme.typography.bodyLarge)
-                }
-            } else {
-                LazyColumn(
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            item { HeroBanner(navController) }
+            item { CategoriesSection(uiState.categories, navController) }
+            item { SectionTitle("PRODUCTOS DESTACADOS") }
+            item {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 160.dp),
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
+                        .padding(horizontal = 16.dp)
+                        .height( ( (uiState.featuredProducts.size + 1) / 2 * 290 ).dp ),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    userScrollEnabled = false
                 ) {
-                    val groupedProducts = uiState.products.groupBy { it.category }
-
-                    groupedProducts.forEach { (category, productsInCategory) ->
-                        item {
-                            Text(
-                                text = category,
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)
-                            )
-                        }
-                        items(productsInCategory) { product ->
-                            ProductCard(product = product, onClick = {
+                    items(uiState.featuredProducts) { product ->
+                        ProductCard(
+                            product = product,
+                            onCardClick = {
                                 navController.navigate(Routes.ProductDetail.createRoute(product.code))
-                            })
-                        }
+                            },
+                            onAddToCartClick = {
+                                homeViewModel.addToCart(product)
+                                Toast.makeText(context, "${product.name} añadido", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
                 }
+            }
+            item { Footer(navController) }
+        }
+    }
+}
+
+@Composable
+fun HeroBanner(navController: NavController) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(250.dp)
+            .padding(16.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(16.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Equipamiento Gamer",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Consolas, PCs, Sillas y más",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { navController.navigate(Routes.Products.route) }) {
+                Text("¡Explorar ahora!")
             }
         }
     }
 }
 
 @Composable
-fun SearchBarAndFilters(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    categories: List<String>,
-    selectedCategory: String?,
-    onCategorySelected: (String?) -> Unit
-) {
-    var isFilterMenuExpanded by remember { mutableStateOf(false) }
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange, // <-- CORREGIDO
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Buscar producto...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Box(modifier = Modifier.align(Alignment.End)) {
-            OutlinedButton(onClick = { isFilterMenuExpanded = true }) {
-                Icon(Icons.Default.FilterList, contentDescription = "Filtros", modifier = Modifier.padding(end = 8.dp))
-                Text(selectedCategory ?: "Todas las categorías")
-            }
-            DropdownMenu(
-                expanded = isFilterMenuExpanded,
-                onDismissRequest = { isFilterMenuExpanded = false }
-            ) {
-                categories.forEach { category ->
-                    DropdownMenuItem(
-                        text = { Text(category) },
-                        onClick = {
-                            onCategorySelected(category)
-                            isFilterMenuExpanded = false
-                        }
+fun CategoriesSection(categories: List<ProductCategory>, navController: NavController) {
+    Column {
+        SectionTitle("Categorías")
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(categories) { category ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { navController.navigate(Routes.Products.route) }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Img", fontSize = 12.sp)
+                    }
+                    Text(
+                        text = category.name,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
             }
@@ -131,39 +143,54 @@ fun SearchBarAndFilters(
 }
 
 @Composable
-fun ProductCard(product: Product, onClick: () -> Unit) {
+fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.secondary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp, horizontal = 16.dp),
+        textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+fun ProductCard(product: Product, onCardClick: () -> Unit, onAddToCartClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .clickable { onCardClick() },
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = product.name,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = formatCurrency(product.price),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.secondary,
-                fontSize = 18.sp
-            )
+        Column(modifier = Modifier.padding(8.dp)) {
+            Box(
+                modifier = Modifier
+                    .height(120.dp)
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(4.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Imagen", fontSize = 12.sp)
+            }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = product.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.tertiary,
-                maxLines = 2
-            )
+            Text(text = product.name, fontWeight = FontWeight.Bold, maxLines = 1, fontSize = 14.sp)
+            Text(text = "Categoría: ${product.category}", fontSize = 12.sp, color = Color.Gray)
+            Text(text = formatCurrency(product.price), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = { onAddToCartClick() },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(4.dp),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                Text("Agregar al carrito", fontSize = 12.sp)
+            }
         }
     }
 }
@@ -171,5 +198,5 @@ fun ProductCard(product: Product, onClick: () -> Unit) {
 fun formatCurrency(price: Double): String {
     val format = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
     format.maximumFractionDigits = 0
-    return "CLP$${format.format(price)}"
+    return "CLP$${format.format(price).trim()}"
 }

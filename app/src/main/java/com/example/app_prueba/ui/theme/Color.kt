@@ -1,14 +1,15 @@
-// ruta: ui/theme/Color.kt
 package com.example.app_prueba.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Black_Gamer = Color(0xFF000000)
-val White_Gamer = Color(0xFFFFFFFF)
-val Light_Gray_Gamer = Color(0xFFD3D3D3)
-val Electric_Blue = Color(0xFF1E90FF)
-val Neon_Green = Color(0xFF39FF14)
+// Paleta de Colores Principal de la Marca
+val DarkBackground = Color(0xFF121212)
+val SurfaceColor = Color(0xFF1F1F1F)
+val LevelUpPurple = Color(0xFF9F529F)
+val LevelUpGreen = Color(0xFF39FF14)
+val TextPrimary = Color.White
+val TextSecondary = Color.Gray
 
-
-val VerdeNeon = Color(0xFF39FF14)
-val MoradoNeon = Color(0xFF9013FE)
+// Colores personalizados que añadiste
+val MoradoNeon = Color(0xFF9F529F) // Mismo que LevelUpPurple
+val VerdeNeon = Color(0xFF39FF14)  // Mismo que LevelUpGreen

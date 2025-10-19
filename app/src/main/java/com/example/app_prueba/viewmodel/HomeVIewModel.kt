@@ -4,18 +4,19 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.app_prueba.application.LevelUpGamerApp
+import com.example.app_prueba.data.model.CartItem
 import com.example.app_prueba.data.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+data class ProductCategory(val name: String, val imageUrl: String = "")
+
 data class HomeState(
-    val products: List<Product> = emptyList(),
-    val isLoading: Boolean = true,
-    val searchQuery: String = "",
-    val selectedCategory: String? = null,
-    val categories: List<String> = emptyList()
+    val featuredProducts: List<Product> = emptyList(),
+    val categories: List<ProductCategory> = emptyList(),
+    val isLoading: Boolean = true
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,43 +24,45 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val uiState = _uiState.asStateFlow()
 
     private val productDao = (application as LevelUpGamerApp).database.productDao()
-    private val allProductsFlow = productDao.getAllProducts()
-
-    private val searchQueryFlow = MutableStateFlow("")
-    private val selectedCategoryFlow = MutableStateFlow<String?>(null)
+    private val cartDao = (application as LevelUpGamerApp).database.cartDao()
 
     init {
+        loadHomePageContent()
+    }
+
+    private fun loadHomePageContent() {
         viewModelScope.launch {
-            // Combina los flujos: la lista de productos, la búsqueda y el filtro
-            combine(allProductsFlow, searchQueryFlow, selectedCategoryFlow) { products, query, category ->
-                val availableCategories = products.map { it.category }.distinct()
+            val allProducts = productDao.getAllProducts().first()
+            val featured = allProducts.take(6)
+            val categories = allProducts
+                .map { it.category }
+                .distinct()
+                .map { ProductCategory(name = it) }
+                .take(5)
 
-                val filteredProducts = products.filter { product ->
-                    // Filtro por categoría
-                    val categoryMatch = category == null || product.category == category
-                    // Filtro por texto de búsqueda
-                    val queryMatch = query.isBlank() ||
-                            product.name.contains(query, ignoreCase = true) ||
-                            product.description.contains(query, ignoreCase = true)
-                    categoryMatch && queryMatch
-                }
-
-                _uiState.value = HomeState(
-                    products = filteredProducts,
-                    isLoading = false,
-                    searchQuery = query,
-                    selectedCategory = category,
-                    categories = listOf("Todas") + availableCategories // Añade "Todas" como opción
-                )
-            }.collect {}
+            _uiState.value = HomeState(
+                featuredProducts = featured,
+                categories = categories,
+                isLoading = false
+            )
         }
     }
 
-    fun onSearchQueryChange(query: String) {
-        searchQueryFlow.value = query
-    }
-
-    fun onCategorySelected(category: String?) {
-        selectedCategoryFlow.value = if (category == "Todas") null else category
+    fun addToCart(product: Product) {
+        viewModelScope.launch {
+            val existingItem = cartDao.getItemByCode(product.code)
+            if (existingItem != null) {
+                existingItem.quantity++
+                cartDao.upsertItem(existingItem)
+            } else {
+                val cartItem = CartItem(
+                    productCode = product.code,
+                    productName = product.name,
+                    productPrice = product.price,
+                    quantity = 1
+                )
+                cartDao.upsertItem(cartItem)
+            }
+        }
     }
 }

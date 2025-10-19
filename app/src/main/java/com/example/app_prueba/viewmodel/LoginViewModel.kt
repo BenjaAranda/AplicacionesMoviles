@@ -1,4 +1,3 @@
-// ruta: viewmodel/LoginViewModel.kt
 package com.example.app_prueba.viewmodel
 
 import android.app.Application
@@ -26,7 +25,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 loginError = "Contraseña incorrecta."
             } else {
                 loginError = null
-                onSuccess() // Navegación en caso de éxito
+                SessionViewModel.onLoginSuccess(user.email) // Pasamos el email del usuario
+                onSuccess()
             }
         }
     }

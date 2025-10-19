@@ -11,12 +11,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.app_prueba.navigation.Routes
-// --- INICIO DE IMPORTACIONES DE COLOR ---
 import com.example.app_prueba.ui.theme.MoradoNeon
 import com.example.app_prueba.ui.theme.VerdeNeon
-// --- FIN DE IMPORTACIONES DE COLOR ---
 import com.example.app_prueba.viewmodel.LoginViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, vm: LoginViewModel = viewModel()) {
     Column(
@@ -29,30 +28,20 @@ fun LoginScreen(navController: NavController, vm: LoginViewModel = viewModel()) 
         Text("Iniciar Sesión", style = MaterialTheme.typography.headlineLarge)
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- Colores para TextField ---
-        val customTextFieldColors = TextFieldDefaults.colors(
-            focusedTextColor = MoradoNeon,
-            unfocusedTextColor = MoradoNeon,
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = VerdeNeon,
-            unfocusedIndicatorColor = VerdeNeon,
+        val customTextFieldColors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+            focusedBorderColor = VerdeNeon,
+            unfocusedBorderColor = MoradoNeon,
             cursorColor = VerdeNeon,
-            focusedLabelColor = MoradoNeon,
-            unfocusedLabelColor = VerdeNeon
+            focusedLabelColor = VerdeNeon,
+            unfocusedLabelColor = MoradoNeon
         )
 
-        // --- INICIO DE CAMBIOS DE COLOR DEL BOTÓN ---
         val customButtonColors = ButtonDefaults.buttonColors(
-            containerColor = MoradoNeon, // Color de fondo normal
-            contentColor = Color.White,  // Color del texto
-            // Aunque no lo pediste, es bueno definir el color presionado,
-            // pero Material 3 ya lo hace por defecto oscureciendo el `containerColor`.
-            // Para un cambio explícito a verde, necesitarías manejar la interacción.
-            // Por simplicidad, dejaremos el morado que se oscurece al presionar.
-            // Si quieres un cambio total a verde, el código sería más complejo.
+            containerColor = MoradoNeon,
+            contentColor = Color.White,
         )
-        // --- FIN DE CAMBIOS DE COLOR DEL BOTÓN ---
 
         OutlinedTextField(
             value = vm.email,
@@ -87,14 +76,13 @@ fun LoginScreen(navController: NavController, vm: LoginViewModel = viewModel()) 
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            colors = customButtonColors // Aplicar colores al botón
+            colors = customButtonColors
         ) {
             Text("Entrar")
         }
 
         TextButton(onClick = { navController.navigate(Routes.Register.route) }) {
             Text("¿No tienes cuenta? Regístrate", color = MoradoNeon)
-
         }
     }
 }

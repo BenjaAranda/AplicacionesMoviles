@@ -17,5 +17,5 @@ sealed class Routes(val route: String) {
         fun createRoute(productId: String) = "product_detail/$productId"
     }
     object Cart : Routes("cart")
-    object Profile : Routes("profile")
+    object Account : Routes("account") // Esta es la ruta correcta
 }

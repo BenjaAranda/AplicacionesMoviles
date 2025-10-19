@@ -12,7 +12,7 @@ sealed class BottomNavItem(
     val icon: ImageVector
 ) {
     object Home : BottomNavItem(
-        route = Routes.Home.route,
+        route = Routes.Home.route, // Asegura que la ruta es la de Home
         title = "Inicio",
         icon = Icons.Default.Home
     )
@@ -21,9 +21,9 @@ sealed class BottomNavItem(
         title = "Carrito",
         icon = Icons.Default.ShoppingCart
     )
-    object Profile : BottomNavItem(
-        route = Routes.Profile.route,
-        title = "Perfil",
+    object Account : BottomNavItem(
+        route = Routes.Account.route,
+        title = "Cuenta",
         icon = Icons.Default.Person
     )
 }

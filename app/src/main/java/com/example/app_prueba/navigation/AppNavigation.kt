@@ -1,11 +1,7 @@
 package com.example.app_prueba.navigation
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -19,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.app_prueba.ui.components.TopBar
 import com.example.app_prueba.ui.screens.about.AboutUsScreen
+import com.example.app_prueba.ui.screens.account.AccountScreen
 import com.example.app_prueba.ui.screens.blog.BlogScreen
 import com.example.app_prueba.ui.screens.cart.CartScreen
 import com.example.app_prueba.ui.screens.contact.ContactScreen
@@ -26,7 +23,6 @@ import com.example.app_prueba.ui.screens.detail.ProductDetailScreen
 import com.example.app_prueba.ui.screens.home.HomeScreen
 import com.example.app_prueba.ui.screens.login.LoginScreen
 import com.example.app_prueba.ui.screens.products.ProductsScreen
-import com.example.app_prueba.ui.screens.profile.ProfileScreen
 import com.example.app_prueba.ui.screens.register.RegisterScreen
 
 @Composable
@@ -35,39 +31,26 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val topBarScreens = listOf(
-        Routes.Home.route,
-        Routes.Products.route,
-        Routes.AboutUs.route,
-        Routes.Blog.route,
-        Routes.Contact.route,
-        Routes.Cart.route,
-        Routes.Profile.route,
-        Routes.ProductDetail.route
-    )
-    val showTopBar = currentDestination?.route in topBarScreens
-
-    val bottomBarScreens = listOf(
-        Routes.Home.route,
-        Routes.Cart.route,
-        Routes.Profile.route
-    )
-    val showBottomBar = currentDestination?.route in bottomBarScreens
+    // Lista de rutas que deben mostrarse a pantalla completa (sin TopBar ni BottomBar)
+    val fullScreenRoutes = listOf(Routes.Login.route, Routes.Register.route)
+    val shouldShowBars = currentDestination?.route !in fullScreenRoutes
 
     Scaffold(
+        // Mostramos la TopBar solo si la ruta actual no es de pantalla completa
         topBar = {
-            if (showTopBar) {
+            if (shouldShowBars) {
                 TopBar(navController = navController)
             }
         },
+        // Mostramos la BottomBar solo si la ruta actual no es de pantalla completa
         bottomBar = {
-            if (showBottomBar) {
-                val items = listOf(
-                    BottomNavItem.Home,
-                    BottomNavItem.Cart,
-                    BottomNavItem.Profile
-                )
+            if (shouldShowBars) {
                 NavigationBar {
+                    val items = listOf(
+                        BottomNavItem.Home,
+                        BottomNavItem.Cart,
+                        BottomNavItem.Account
+                    )
                     items.forEach { screen ->
                         NavigationBarItem(
                             icon = { Icon(screen.icon, contentDescription = screen.title) },
@@ -90,18 +73,21 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Routes.Login.route,
+            startDestination = Routes.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            // Rutas que se mostrarán SIN barras de navegación
             composable(Routes.Login.route) { LoginScreen(navController = navController) }
             composable(Routes.Register.route) { RegisterScreen(navController = navController) }
+
+            // Rutas que se mostrarán CON las barras de navegación
             composable(Routes.Home.route) { HomeScreen(navController = navController) }
-            composable(Routes.Products.route) { ProductsScreen() }
+            composable(Routes.Products.route) { ProductsScreen(navController = navController) }
             composable(Routes.AboutUs.route) { AboutUsScreen() }
             composable(Routes.Blog.route) { BlogScreen() }
             composable(Routes.Contact.route) { ContactScreen() }
             composable(Routes.Cart.route) { CartScreen(navController = navController) }
-            composable(Routes.Profile.route) { ProfileScreen(navController = navController) }
+            composable(Routes.Account.route) { AccountScreen(navController = navController) }
             composable(
                 route = Routes.ProductDetail.route,
                 arguments = listOf(navArgument("productId") { type = NavType.StringType })
