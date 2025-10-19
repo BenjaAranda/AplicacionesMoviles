@@ -1,105 +1,104 @@
 package com.example.app_prueba.ui.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.app_prueba.navigation.Routes
 
-@OptIn(ExperimentalMaterial3Api::class)
+// Data class para definir cada elemento de la barra de navegación.
+data class NavItem(val label: String, val route: String)
+
 @Composable
 fun TopBar(navController: NavController) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    // Estado para controlar si el menú desplegable está abierto o cerrado.
-    var menuExpanded by remember { mutableStateOf(false) }
-
-    val routesWithoutBack = listOf(
-        Routes.Home.route,
-        Routes.Login.route,
-        Routes.Register.route
+    // Lista de los elementos de navegación que queremos mostrar.
+    // He corregido la lista según tu petición ("Inicio, Productos, Nosotros y Blog").
+    val navItems = listOf(
+        NavItem("Inicio", Routes.Home.route),
+        NavItem("Productos", Routes.Products.route),
+        NavItem("Nosotros", Routes.AboutUs.route),
+        NavItem("Blog", Routes.Blog.route),
+        NavItem("Contacto", Routes.Contact.route)
     )
 
-    TopAppBar(
-        title = { Text("Mi Tienda") },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer, // Color para los iconos de acción
-            navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer // Color para el icono de navegación
-        ),
-        navigationIcon = {
-            if (currentRoute !in routesWithoutBack) {
-                IconButton(onClick = { navController.navigateUp() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver"
+    // Surface actúa como el contenedor principal de nuestra barra.
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp), // Altura estándar para una TopBar.
+        color = MaterialTheme.colorScheme.surface, // Color de fondo de la barra.
+        shadowElevation = 4.dp // Pequeña sombra para darle profundidad.
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // ---- 1. LOGO (Izquierda) ----
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    // TODO: Aquí colocarás tu logo cuando te lo pase.
+                    // Por ahora, es un cuadrado de color para marcar el lugar.
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+                    .clickable { navController.navigate(Routes.Home.route) }, // El logo lleva a Inicio.
+                contentAlignment = Alignment.Center
+            ) {
+                Text("L", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 24.sp)
+            }
+
+            // Espacio entre el logo y las opciones de navegación
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // ---- 2. OPCIONES DE NAVEGACIÓN (Centro con Scroll) ----
+            Row(
+                // Ocupa el espacio restante y permite el scroll horizontal.
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(rememberScrollState()),
+                // Añade espacio entre los elementos y los centra verticalmente.
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Obtenemos la ruta actual para saber qué opción resaltar.
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+
+                navItems.forEach { item ->
+                    val isSelected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+
+                    Text(
+                        text = item.label,
+                        fontSize = 16.sp,
+                        // El color cambia si la opción está seleccionada.
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        // El modificador no necesita padding, Arrangement.spacedBy se encarga.
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { navController.navigate(item.route) }
+                            .padding(vertical = 8.dp) // Mantenemos un padding vertical para el área táctil.
                     )
                 }
             }
-        },
-        // ----> INICIO DE LA MODIFICACIÓN: MENÚ DE ACCIONES <----
-        actions = {
-            // Icono de tres puntos que abrirá el menú.
-            IconButton(onClick = { menuExpanded = true }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "Menú de opciones"
-                )
-            }
-
-            // Menú desplegable que se muestra cuando menuExpanded es true.
-            DropdownMenu(
-                expanded = menuExpanded,
-                onDismissRequest = { menuExpanded = false } // Se cierra si el usuario toca fuera.
-            ) {
-                // Cada DropdownMenuItem es una opción en el menú.
-                DropdownMenuItem(
-                    text = { Text("Sobre Nosotros") },
-                    onClick = {
-                        navController.navigate(Routes.AboutUs.route)
-                        menuExpanded = false // Cierra el menú después de la navegación.
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Blog") },
-                    onClick = {
-                        navController.navigate(Routes.Blog.route)
-                        menuExpanded = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Contacto") },
-                    onClick = {
-                        navController.navigate(Routes.Contact.route)
-                        menuExpanded = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Ver todos los productos") },
-                    onClick = {
-                        navController.navigate(Routes.Products.route)
-                        menuExpanded = false
-                    }
-                )
-            }
         }
-        // ----> FIN DE LA MODIFICACIÓN <----
-    )
+    }
 }
