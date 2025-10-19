@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.example.app_prueba.data.database.APP_CATEGORIES_LIST
 
 data class ProductCategory(val name: String, val imageUrl: String = "")
 
@@ -34,11 +35,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val allProducts = productDao.getAllProducts().first()
             val featured = allProducts.take(6)
-            val categories = allProducts
-                .map { it.category }
-                .distinct()
-                .map { ProductCategory(name = it) }
-                .take(5)
+            val categories = APP_CATEGORIES_LIST.map { ProductCategory(name = it) }
 
             _uiState.value = HomeState(
                 featuredProducts = featured,

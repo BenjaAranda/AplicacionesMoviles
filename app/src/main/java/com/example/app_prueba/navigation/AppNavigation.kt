@@ -82,7 +82,21 @@ fun AppNavigation() {
 
             // Rutas que se mostrarán CON las barras de navegación
             composable(Routes.Home.route) { HomeScreen(navController = navController) }
-            composable(Routes.Products.route) { ProductsScreen(navController = navController) }
+            composable(
+                // Esto se convertirá en "products?category={category}"
+                route = "${Routes.Products.route}?category={category}",
+                arguments = listOf(
+                    navArgument("category") {
+                        type = NavType.StringType
+                        nullable = true // Es opcional
+                        defaultValue = null
+                    }
+                )
+            ) {
+                // La llamada a tu pantalla sigue siendo la misma
+                ProductsScreen(navController = navController)
+            }
+
             composable(Routes.AboutUs.route) { AboutUsScreen() }
             composable(Routes.Blog.route) { BlogScreen() }
             composable(Routes.Contact.route) { ContactScreen() }

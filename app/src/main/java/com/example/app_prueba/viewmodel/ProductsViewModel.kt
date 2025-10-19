@@ -2,6 +2,7 @@ package com.example.app_prueba.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle // Import necesario
 import androidx.lifecycle.viewModelScope
 import com.example.app_prueba.application.LevelUpGamerApp
 import com.example.app_prueba.data.model.CartItem
@@ -10,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import com.example.app_prueba.data.database.APP_CATEGORIES_LIST
+
 
 enum class SortOption {
     DEFAULT,
@@ -29,7 +32,15 @@ data class ProductsState(
     val sortOption: SortOption = SortOption.DEFAULT
 )
 
-class ProductsViewModel(application: Application) : AndroidViewModel(application) {
+// --- CAMBIO 1: El constructor AHORA RECIBE SavedStateHandle ---
+class ProductsViewModel(
+    application: Application,
+    savedStateHandle: SavedStateHandle // <--- ¡YA ESTÁ AQUÍ!
+) : AndroidViewModel(application) {
+
+    // --- CAMBIO 2: LEEMOS la categoría que viene de la navegación ---
+    private val categoryFromNav: String? = savedStateHandle.get<String>("category")
+
     private val _uiState = MutableStateFlow(ProductsState())
     val uiState = _uiState.asStateFlow()
 
@@ -37,12 +48,18 @@ class ProductsViewModel(application: Application) : AndroidViewModel(application
     private val cartDao = (application as LevelUpGamerApp).database.cartDao()
     private val allProductsFlow = productDao.getAllProducts()
 
-    private val filtersFlow = MutableStateFlow(Triple("", "Todas" as String?, SortOption.DEFAULT))
+    // --- CAMBIO 3: USAMOS la categoría de la navegación (categoryFromNav) para el valor inicial ---
+    private val filtersFlow = MutableStateFlow(Triple(
+        "",
+        categoryFromNav ?: "Todas", // <-- Si es null, usa "Todas"
+        SortOption.DEFAULT
+    ))
 
     init {
         viewModelScope.launch {
             combine(allProductsFlow, filtersFlow) { products, (query, category, sort) ->
-                val availableCategories = listOf("Todas") + products.map { it.category }.distinct()
+
+                val availableCategories = listOf("Todas") + APP_CATEGORIES_LIST
 
                 val filteredProducts = products.filter { product ->
                     val categoryMatch = category == "Todas" || product.category == category
