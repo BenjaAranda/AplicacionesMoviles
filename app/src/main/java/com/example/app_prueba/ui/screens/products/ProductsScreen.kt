@@ -1,9 +1,13 @@
 package com.example.app_prueba.ui.screens.products
 
 import android.widget.Toast
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -18,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -38,12 +43,12 @@ import com.example.app_prueba.viewmodel.SortOption
 import java.text.NumberFormat
 import java.util.Locale
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewModel()) {
     val uiState by vm.uiState.collectAsState()
     val context = LocalContext.current
 
-    // La estructura principal ahora es una LazyVerticalGrid, que maneja todo el scroll.
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         modifier = Modifier.fillMaxSize(),
@@ -51,17 +56,21 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // El panel de filtros ahora es el primer item y ocupa todo el ancho.
         item(span = { GridItemSpan(maxLineSpan) }) {
-            FiltersPanel(
-                state = uiState,
-                onSearchQueryChange = { vm.onSearchQueryChange(it) },
-                onCategorySelected = { vm.onCategorySelected(it) },
-                onMinPriceChange = { vm.onMinPriceChange(it) },
-                onMaxPriceChange = { vm.onMaxPriceChange(it) },
-                onSortOptionChange = { vm.onSortOptionChange(it) },
-                onApplyFilters = { vm.applyFilters() }
-            )
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn() + expandVertically()
+            ) {
+                FiltersPanel(
+                    state = uiState,
+                    onSearchQueryChange = { vm.onSearchQueryChange(it) },
+                    onCategorySelected = { vm.onCategorySelected(it) },
+                    onMinPriceChange = { vm.onMinPriceChange(it) },
+                    onMaxPriceChange = { vm.onMaxPriceChange(it) },
+                    onSortOptionChange = { vm.onSortOptionChange(it) },
+                    onApplyFilters = { vm.applyFilters() }
+                )
+            }
         }
 
         if (uiState.isLoading) {
@@ -80,8 +89,7 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
                 }
             }
         } else {
-            // Renderiza la lista de productos
-            items(uiState.products) { product ->
+            items(uiState.products, key = { it.code }) { product ->
                 ProductGridItem(
                     product = product,
                     navController = navController,
@@ -93,7 +101,6 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
             }
         }
 
-        // El Footer es el último item y ocupa todo el ancho.
         item(span = { GridItemSpan(maxLineSpan) }) {
             Footer(navController = navController)
         }
@@ -114,7 +121,7 @@ fun FiltersPanel(
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var categoryMenuExpanded by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.padding(bottom = 16.dp)) { // Añadimos padding inferior
+    Column(modifier = Modifier.padding(bottom = 16.dp)) {
         OutlinedTextField(
             value = state.searchQuery,
             onValueChange = onSearchQueryChange,
@@ -124,7 +131,6 @@ fun FiltersPanel(
             singleLine = true
         )
         Spacer(modifier = Modifier.height(16.dp))
-
         Text("Filtros", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -181,6 +187,10 @@ fun FiltersPanel(
 
 @Composable
 fun ProductGridItem(product: Product, navController: NavController, onAddToCartClick: () -> Unit) {
+    val buttonInteractionSource = remember { MutableInteractionSource() }
+    val isButtonPressed by buttonInteractionSource.collectIsPressedAsState()
+    val buttonScale by animateFloatAsState(if(isButtonPressed) 1.1f else 1f, label = "buttonScale")
+
     Card(
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -198,21 +208,16 @@ fun ProductGridItem(product: Product, navController: NavController, onAddToCartC
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = product.name,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 14.sp
-            )
+            Text(text = product.name, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 14.sp)
             Text("Categoría: ${product.category}", fontSize = 12.sp, color = Color.Gray)
             Text(formatCurrency(product.price), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = { onAddToCartClick() },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().scale(buttonScale),
                 shape = RoundedCornerShape(4.dp),
-                contentPadding = PaddingValues(vertical = 4.dp)
+                contentPadding = PaddingValues(vertical = 4.dp),
+                interactionSource = buttonInteractionSource
             ) {
                 Text("Agregar al carrito", fontSize = 12.sp)
             }

@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-// Ahora la categoría incluye un recurso de imagen
 data class ProductCategory(
     val name: String,
     @DrawableRes val imageRes: Int
@@ -41,7 +40,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             val allProducts = productDao.getAllProducts().first()
             val featured = allProducts.take(6)
 
-            // Mapeo de nombres de categoría a recursos de imagen
             val categoryImages = mapOf(
                 "Juegos de Mesa" to R.drawable.catan,
                 "Accesorios" to R.drawable.accesorios,
@@ -59,7 +57,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 .map { categoryName ->
                     ProductCategory(
                         name = categoryName,
-                        imageRes = categoryImages[categoryName] ?: R.drawable.product // Usa una imagen por defecto
+                        imageRes = categoryImages[categoryName] ?: R.drawable.product
                     )
                 }
                 .take(5)
