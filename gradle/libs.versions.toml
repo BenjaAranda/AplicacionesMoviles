@@ -10,8 +10,10 @@ activityCompose = "1.8.0"
 composeBom = "2024.09.00"
 ksp = "2.0.21-1.0.27"
 animation = "1.9.3"
+mapsCompose = "6.12.0"
 
 [libraries]
+androidx-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

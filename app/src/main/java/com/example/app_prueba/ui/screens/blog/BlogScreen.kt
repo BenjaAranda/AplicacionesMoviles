@@ -7,14 +7,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,7 +35,7 @@ fun BlogScreen(navController: NavController, vm: BlogViewModel = viewModel()) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item { BlogHeader() }
         item { FeaturedPost(post = vm.featuredPost) }
-        item { OtherPostsSection(posts = vm.posts.drop(1)) } // Muestra el resto de los posts
+        item { OtherPostsSection(posts = vm.posts.drop(1)) }
         item { Footer(navController = navController) }
     }
 }
@@ -70,8 +73,9 @@ fun BlogHeader() {
 }
 
 @Composable
-fun FeaturedPost(post: BlogPost) {
+fun FeaturedPost(post: BlogPost, vm: BlogViewModel = viewModel()) {
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -114,8 +118,21 @@ fun FeaturedPost(post: BlogPost) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { uriHandler.openUri(post.url) }) {
-                    Text("Leer más")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(onClick = { uriHandler.openUri(post.url) }) {
+                        Text("Leer más")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(onClick = { vm.sharePost(context, post) }) {
+                        Icon(Icons.Default.Share, contentDescription = "Compartir noticia")
+                    }
+                    // --- NUEVO BOTÓN DE CALENDARIO ---
+                    IconButton(onClick = { vm.scheduleEvent(context, post) }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Agendar evento")
+                    }
+                    // ---------------------------------
                 }
             }
         }
@@ -135,8 +152,9 @@ fun OtherPostsSection(posts: List<BlogPost>) {
 }
 
 @Composable
-fun BlogPostCard(post: BlogPost) {
+fun BlogPostCard(post: BlogPost, vm: BlogViewModel = viewModel()) {
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier.width(300.dp),
@@ -173,8 +191,21 @@ fun BlogPostCard(post: BlogPost) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { uriHandler.openUri(post.url) }) {
-                    Text("Leer más")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(onClick = { uriHandler.openUri(post.url) }) {
+                        Text("Leer más")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(onClick = { vm.sharePost(context, post) }) {
+                        Icon(Icons.Default.Share, contentDescription = "Compartir noticia")
+                    }
+                    // --- NUEVO BOTÓN DE CALENDARIO ---
+                    IconButton(onClick = { vm.scheduleEvent(context, post) }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Agendar evento")
+                    }
+                    // ---------------------------------
                 }
             }
         }
