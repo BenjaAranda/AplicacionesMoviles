@@ -40,7 +40,8 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
 
             userDao.insert(newUser)
             registerError = null
-            SessionViewModel.onLoginSuccess(newUser.email) // También iniciamos sesión al registrar
+            // Inicia sesión automáticamente y guarda el estado del descuento
+            SessionViewModel.onLoginSuccess(newUser.email, newUser.hasDuocDiscount)
             onSuccess()
         }
     }

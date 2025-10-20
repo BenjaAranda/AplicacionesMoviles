@@ -12,6 +12,8 @@ import kotlinx.coroutines.launch
 
 data class CartState(
     val items: List<CartItem> = emptyList(),
+    val subtotal: Double = 0.0,
+    val discount: Double = 0.0,
     val total: Double = 0.0
 )
 
@@ -28,15 +30,43 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadCartItems() {
         viewModelScope.launch {
             cartDao.getAllItems().collectLatest { items ->
-                val total = items.sumOf { it.productPrice * it.quantity }
-                _uiState.value = CartState(items = items, total = total)
+                val subtotal = items.sumOf { it.productPrice * it.quantity }
+                val discount = if (SessionViewModel.hasDuocDiscount) subtotal * 0.20 else 0.0
+                val total = subtotal - discount
+
+                _uiState.value = CartState(
+                    items = items,
+                    subtotal = subtotal,
+                    discount = discount,
+                    total = total
+                )
             }
         }
     }
 
-    fun deleteItem(item: CartItem) {
+    fun increaseQuantity(item: CartItem) {
         viewModelScope.launch {
-            cartDao.deleteItem(item)
+            item.quantity++
+            cartDao.upsertItem(item)
+        }
+    }
+
+    fun decreaseQuantity(item: CartItem) {
+        viewModelScope.launch {
+            if (item.quantity > 1) {
+                item.quantity--
+                cartDao.upsertItem(item)
+            } else {
+                // Si la cantidad es 1, eliminar el producto
+                cartDao.deleteItem(item)
+            }
+        }
+    }
+
+    fun clearCart() {
+        viewModelScope.launch {
+            // Esta es una nueva función que debemos añadir al DAO
+            cartDao.clearAllItems()
         }
     }
 }

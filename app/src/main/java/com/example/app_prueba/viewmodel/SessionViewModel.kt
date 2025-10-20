@@ -12,13 +12,18 @@ object SessionViewModel : ViewModel() {
     var currentUserEmail by mutableStateOf<String?>(null)
         private set
 
-    fun onLoginSuccess(email: String) {
+    var hasDuocDiscount by mutableStateOf(false) // Campo para saber si tiene descuento
+        private set
+
+    fun onLoginSuccess(email: String, discount: Boolean) {
         isLoggedIn = true
         currentUserEmail = email
+        hasDuocDiscount = discount
     }
 
     fun onLogout() {
         isLoggedIn = false
         currentUserEmail = null
+        hasDuocDiscount = false
     }
 }

@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CartDao {
-    @Upsert // Inserta o actualiza si ya existe
+    @Upsert
     suspend fun upsertItem(item: CartItem)
 
     @Delete
@@ -20,4 +20,7 @@ interface CartDao {
 
     @Query("SELECT * FROM cart_items WHERE productCode = :productCode LIMIT 1")
     suspend fun getItemByCode(productCode: String): CartItem?
+
+    @Query("DELETE FROM cart_items")
+    suspend fun clearAllItems() // Nueva función para vaciar el carrito
 }

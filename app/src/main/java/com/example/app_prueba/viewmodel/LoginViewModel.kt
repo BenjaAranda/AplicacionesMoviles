@@ -25,7 +25,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 loginError = "Contraseña incorrecta."
             } else {
                 loginError = null
-                SessionViewModel.onLoginSuccess(user.email) // Pasamos el email del usuario
+                // Actualiza la sesión con el estado de descuento del usuario
+                SessionViewModel.onLoginSuccess(user.email, user.hasDuocDiscount)
                 onSuccess()
             }
         }
