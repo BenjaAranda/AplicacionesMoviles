@@ -25,63 +25,82 @@ import com.example.app_prueba.ui.screens.login.LoginScreen
 import com.example.app_prueba.ui.screens.products.ProductsScreen
 import com.example.app_prueba.ui.screens.register.RegisterScreen
 
+
+import com.example.app_prueba.ui.theme.AppPruebaTheme
+import androidx.compose.material3.MaterialTheme
+
 @Composable
 fun AppNavigation() {
-    val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
 
-    Scaffold(
-        topBar = {
-            TopBar(navController = navController)
-        },
-        bottomBar = {
-            NavigationBar {
-                val items = listOf(
-                    BottomNavItem.Home,
-                    BottomNavItem.Cart,
-                    BottomNavItem.Account
-                )
-                items.forEach { screen ->
-                    NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = screen.title) },
-                        label = { Text(screen.title) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
+    AppPruebaTheme {
+        val navController = rememberNavController()
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+
+        Scaffold(
+            topBar = {
+
+                TopBar(navController = navController)
+            },
+            bottomBar = {
+                NavigationBar(
+
+                    containerColor = MaterialTheme.colorScheme.surface
+                ) {
+                    val items = listOf(
+                        BottomNavItem.Home,
+                        BottomNavItem.Cart,
+                        BottomNavItem.Account
                     )
+                    items.forEach { screen ->
+                        NavigationBarItem(
+                            icon = { Icon(screen.icon, contentDescription = screen.title) },
+                            label = { Text(screen.title) },
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary, // Verde para el ícono seleccionado
+                                selectedTextColor = MaterialTheme.colorScheme.primary, // Verde para el texto seleccionado
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // Morado más tenue
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // Morado más tenue
+                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) // Un sutil fondo verde para el ítem activo
+                            )
+                        )
+                    }
                 }
             }
-        }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Routes.Home.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Routes.Login.route) { LoginScreen(navController = navController) }
-            composable(Routes.Register.route) { RegisterScreen(navController = navController) }
-            composable(Routes.Home.route) { HomeScreen(navController = navController) }
-            composable(Routes.Products.route) { ProductsScreen(navController = navController) }
-            composable(Routes.AboutUs.route) { AboutUsScreen(navController = navController) }
-            composable(Routes.Blog.route) { BlogScreen(navController = navController) }
-            composable(Routes.Contact.route) { ContactScreen(navController = navController) }
-            composable(Routes.Cart.route) { CartScreen(navController = navController) }
-            composable(Routes.Account.route) { AccountScreen(navController = navController) }
-            composable(
-                route = Routes.ProductDetail.route,
-                arguments = listOf(navArgument("productId") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val productId = backStackEntry.arguments?.getString("productId")
-                requireNotNull(productId)
-                ProductDetailScreen(productId = productId, navController = navController)
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = Routes.Home.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+
+                composable(Routes.Login.route) { LoginScreen(navController = navController) }
+                composable(Routes.Register.route) { RegisterScreen(navController = navController) }
+                composable(Routes.Home.route) { HomeScreen(navController = navController) }
+                composable(Routes.Products.route) { ProductsScreen(navController = navController) }
+                composable(Routes.AboutUs.route) { AboutUsScreen(navController = navController) }
+                composable(Routes.Blog.route) { BlogScreen(navController = navController) }
+                composable(Routes.Contact.route) { ContactScreen(navController = navController) }
+                composable(Routes.Cart.route) { CartScreen(navController = navController) }
+                composable(Routes.Account.route) { AccountScreen(navController = navController) }
+                composable(
+                    route = Routes.ProductDetail.route,
+                    arguments = listOf(navArgument("productId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val productId = backStackEntry.arguments?.getString("productId")
+                    requireNotNull(productId)
+                    ProductDetailScreen(productId = productId, navController = navController)
+                }
             }
         }
     }

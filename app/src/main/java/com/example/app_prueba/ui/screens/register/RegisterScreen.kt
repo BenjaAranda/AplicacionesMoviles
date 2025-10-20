@@ -12,8 +12,11 @@ import androidx.navigation.NavController
 import com.example.app_prueba.navigation.Routes
 import com.example.app_prueba.viewmodel.RegisterViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController, vm: RegisterViewModel = viewModel()) {
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -21,14 +24,31 @@ fun RegisterScreen(navController: NavController, vm: RegisterViewModel = viewMod
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+
         Text("Crear Cuenta", style = MaterialTheme.typography.headlineLarge)
         Spacer(modifier = Modifier.height(32.dp))
+
+
+        val customTextFieldColors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,      // Borde enfocado: Verde
+            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), // Borde sin foco: Morado tenue
+            cursorColor = MaterialTheme.colorScheme.primary,             // Cursor: Verde
+            focusedLabelColor = MaterialTheme.colorScheme.primary,       // Etiqueta enfocada: Verde
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,   // Etiqueta sin foco: Morado
+        )
+
+
+        val primaryButtonColors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,      // Fondo del botón: Verde
+            contentColor = MaterialTheme.colorScheme.onPrimary,      // Color del texto: Negro (definido en onPrimary)
+        )
 
         OutlinedTextField(
             value = vm.email,
             onValueChange = { vm.email = it },
             label = { Text("Correo Electrónico") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = customTextFieldColors // Aplicamos colores
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -37,7 +57,8 @@ fun RegisterScreen(navController: NavController, vm: RegisterViewModel = viewMod
             onValueChange = { vm.pass = it },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = customTextFieldColors // Aplicamos colores
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -46,7 +67,8 @@ fun RegisterScreen(navController: NavController, vm: RegisterViewModel = viewMod
             onValueChange = { vm.confirmPass = it },
             label = { Text("Confirmar Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = customTextFieldColors // Aplicamos colores
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -63,7 +85,8 @@ fun RegisterScreen(navController: NavController, vm: RegisterViewModel = viewMod
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = primaryButtonColors // Aplicamos colores
         ) {
             Text("Registrarse")
         }
