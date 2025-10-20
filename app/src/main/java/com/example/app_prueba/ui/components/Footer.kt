@@ -39,17 +39,6 @@ fun Footer(navController: NavController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("Suscríbete", fontWeight = FontWeight.Bold, color = Color.White)
-        OutlinedTextField(
-            value = "", onValueChange = {},
-            label = { Text("Tu correo", fontSize = 12.sp) },
-            modifier = Modifier.fillMaxWidth(0.8f),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Color.White, unfocusedTextColor = Color.White, cursorColor = Color.White,
-                focusedBorderColor = Color.Gray, unfocusedBorderColor = Color.DarkGray
-            )
-        )
-
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             text = "© 2025 Level-Up Gamer. Todos los derechos reservados.",

@@ -31,42 +31,32 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Lista de rutas que deben mostrarse a pantalla completa (sin TopBar ni BottomBar)
-    val fullScreenRoutes = listOf(Routes.Login.route, Routes.Register.route)
-    val shouldShowBars = currentDestination?.route !in fullScreenRoutes
-
     Scaffold(
-        // Mostramos la TopBar solo si la ruta actual no es de pantalla completa
         topBar = {
-            if (shouldShowBars) {
-                TopBar(navController = navController)
-            }
+            TopBar(navController = navController)
         },
-        // Mostramos la BottomBar solo si la ruta actual no es de pantalla completa
         bottomBar = {
-            if (shouldShowBars) {
-                NavigationBar {
-                    val items = listOf(
-                        BottomNavItem.Home,
-                        BottomNavItem.Cart,
-                        BottomNavItem.Account
-                    )
-                    items.forEach { screen ->
-                        NavigationBarItem(
-                            icon = { Icon(screen.icon, contentDescription = screen.title) },
-                            label = { Text(screen.title) },
-                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                            onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
+            NavigationBar {
+                val items = listOf(
+                    BottomNavItem.Home,
+                    BottomNavItem.Cart,
+                    BottomNavItem.Account
+                )
+                items.forEach { screen ->
+                    NavigationBarItem(
+                        icon = { Icon(screen.icon, contentDescription = screen.title) },
+                        label = { Text(screen.title) },
+                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                        onClick = {
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
                                 }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
@@ -76,30 +66,13 @@ fun AppNavigation() {
             startDestination = Routes.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            // Rutas que se mostrarán SIN barras de navegación
             composable(Routes.Login.route) { LoginScreen(navController = navController) }
             composable(Routes.Register.route) { RegisterScreen(navController = navController) }
-
-            // Rutas que se mostrarán CON las barras de navegación
             composable(Routes.Home.route) { HomeScreen(navController = navController) }
-            composable(
-                // Esto se convertirá en "products?category={category}"
-                route = "${Routes.Products.route}?category={category}",
-                arguments = listOf(
-                    navArgument("category") {
-                        type = NavType.StringType
-                        nullable = true // Es opcional
-                        defaultValue = null
-                    }
-                )
-            ) {
-                // La llamada a tu pantalla sigue siendo la misma
-                ProductsScreen(navController = navController)
-            }
-
-            composable(Routes.AboutUs.route) { AboutUsScreen() }
-            composable(Routes.Blog.route) { BlogScreen() }
-            composable(Routes.Contact.route) { ContactScreen() }
+            composable(Routes.Products.route) { ProductsScreen(navController = navController) }
+            composable(Routes.AboutUs.route) { AboutUsScreen(navController = navController) }
+            composable(Routes.Blog.route) { BlogScreen(navController = navController) }
+            composable(Routes.Contact.route) { ContactScreen(navController = navController) }
             composable(Routes.Cart.route) { CartScreen(navController = navController) }
             composable(Routes.Account.route) { AccountScreen(navController = navController) }
             composable(

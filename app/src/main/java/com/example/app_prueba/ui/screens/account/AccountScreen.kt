@@ -1,9 +1,5 @@
 package com.example.app_prueba.ui.screens.account
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SupportAgent
@@ -11,49 +7,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.app_prueba.navigation.Routes
+import com.example.app_prueba.viewmodel.ProfileViewModel
 import com.example.app_prueba.viewmodel.SessionViewModel
 
-// Función para contactar a soporte
-private fun contactSupport(context: Context) {
-    try {
-        val phoneNumber = "+56912345678" // Reemplaza con un número de teléfono real
-        val message = "Hola, necesito ayuda con la app Level-Up Gamer."
-
-        val intent = Intent(Intent.ACTION_VIEW)
-        val url = "https://api.whatsapp.com/send?phone=$phoneNumber&text=${Uri.encode(message)}"
-        intent.data = Uri.parse(url)
-        intent.setPackage("com.whatsapp") // Asegura que se abra en WhatsApp
-        context.startActivity(intent)
-    } catch (e: Exception) {
-        // Esto ocurre si WhatsApp no está instalado
-        Toast.makeText(context, "WhatsApp no está instalado.", Toast.LENGTH_SHORT).show()
-    }
-}
-
-// Función para cerrar sesión
-private fun onLogout(navController: NavController) {
-    SessionViewModel.onLogout()
-    navController.navigate(Routes.Login.route) {
-        popUpTo(0) { // Elimina todo el backstack
-            inclusive = true
-        }
-    }
-}
-
-
 @Composable
-fun AccountScreen(navController: NavController) {
+fun AccountScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
     val isLoggedIn = SessionViewModel.isLoggedIn
     val currentUserEmail = SessionViewModel.currentUserEmail
-    val context = LocalContext.current
 
+    // Vista para usuario que SÍ ha iniciado sesión
     if (isLoggedIn && currentUserEmail != null) {
-        // --- VISTA PARA USUARIO LOGUEADO ---
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -72,7 +40,10 @@ fun AccountScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { contactSupport(context) },
+                onClick = {
+                    // Navega a la página de contacto
+                    navController.navigate(Routes.Contact.route)
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
@@ -83,18 +54,19 @@ fun AccountScreen(navController: NavController) {
                 Text("Contactar a Soporte Técnico")
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f)) // Empuja el botón de logout hacia abajo
 
             Button(
-                onClick = { onLogout(navController) },
+                onClick = { profileViewModel.onLogout(navController) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             ) {
                 Text("Cerrar Sesión")
             }
         }
-    } else {
-        // --- VISTA PARA USUARIO NO LOGUEADO ---
+    }
+    // Vista para usuario que NO ha iniciado sesión
+    else {
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -5,8 +5,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,8 +43,16 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
     val uiState by vm.uiState.collectAsState()
     val context = LocalContext.current
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        item {
+    // La estructura principal ahora es una LazyVerticalGrid, que maneja todo el scroll.
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 160.dp),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // El panel de filtros ahora es el primer item y ocupa todo el ancho.
+        item(span = { GridItemSpan(maxLineSpan) }) {
             FiltersPanel(
                 state = uiState,
                 onSearchQueryChange = { vm.onSearchQueryChange(it) },
@@ -57,47 +65,36 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
         }
 
         if (uiState.isLoading) {
-            item {
-                Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 100.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
         } else if (uiState.products.isEmpty()) {
-            item {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(
-                    modifier = Modifier.fillParentMaxSize().padding(top = 100.dp),
-                    contentAlignment = Alignment.TopCenter
+                    modifier = Modifier.fillMaxWidth().padding(top = 100.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text("No se encontraron productos con esos filtros.")
                 }
             }
         } else {
-            item {
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 160.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(( (uiState.products.size + 1) / 2 * 300 ).dp),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    userScrollEnabled = false
-                ) {
-                    items(uiState.products) { product ->
-                        ProductGridItem(
-                            product = product,
-                            navController = navController,
-                            onAddToCartClick = {
-                                vm.addToCart(product)
-                                Toast.makeText(context, "${product.name} añadido", Toast.LENGTH_SHORT).show()
-                            }
-                        )
+            // Renderiza la lista de productos
+            items(uiState.products) { product ->
+                ProductGridItem(
+                    product = product,
+                    navController = navController,
+                    onAddToCartClick = {
+                        vm.addToCart(product)
+                        Toast.makeText(context, "${product.name} añadido", Toast.LENGTH_SHORT).show()
                     }
-                }
+                )
             }
         }
 
-        item {
+        // El Footer es el último item y ocupa todo el ancho.
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Footer(navController = navController)
         }
     }
@@ -117,7 +114,7 @@ fun FiltersPanel(
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var categoryMenuExpanded by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = Modifier.padding(bottom = 16.dp)) { // Añadimos padding inferior
         OutlinedTextField(
             value = state.searchQuery,
             onValueChange = onSearchQueryChange,
