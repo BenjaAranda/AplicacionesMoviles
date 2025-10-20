@@ -1,4 +1,3 @@
-// data/model/Product.kt
 package com.example.app_prueba.data.model
 
 import androidx.room.Entity

@@ -2,6 +2,7 @@ package com.example.app_prueba.ui.screens.products
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,10 +17,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,6 +32,7 @@ import androidx.navigation.NavController
 import com.example.app_prueba.data.model.Product
 import com.example.app_prueba.navigation.Routes
 import com.example.app_prueba.ui.components.Footer
+import com.example.app_prueba.ui.util.getProductImage
 import com.example.app_prueba.viewmodel.ProductsViewModel
 import com.example.app_prueba.viewmodel.SortOption
 import java.text.NumberFormat
@@ -59,21 +65,19 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
         } else if (uiState.products.isEmpty()) {
             item {
                 Box(
-                    modifier = Modifier
-                        .fillParentMaxSize()
-                        .padding(top = 100.dp), contentAlignment = Alignment.TopCenter
+                    modifier = Modifier.fillParentMaxSize().padding(top = 100.dp),
+                    contentAlignment = Alignment.TopCenter
                 ) {
                     Text("No se encontraron productos con esos filtros.")
                 }
             }
         } else {
-            // Usamos LazyVerticalGrid dentro de la LazyColumn
             item {
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 160.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(( (uiState.products.size + 1) / 2 * 280 ).dp), // Altura dinámica
+                        .height(( (uiState.products.size + 1) / 2 * 300 ).dp),
                     contentPadding = PaddingValues(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -114,7 +118,6 @@ fun FiltersPanel(
     var categoryMenuExpanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        // --- BARRA DE BÚSQUEDA AÑADIDA AQUÍ ---
         OutlinedTextField(
             value = state.searchQuery,
             onValueChange = onSearchQueryChange,
@@ -124,7 +127,6 @@ fun FiltersPanel(
             singleLine = true
         )
         Spacer(modifier = Modifier.height(16.dp))
-        // ------------------------------------
 
         Text("Filtros", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
@@ -188,17 +190,24 @@ fun ProductGridItem(product: Product, navController: NavController, onAddToCartC
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            Box(
+            Image(
+                painter = painterResource(id = getProductImage(product.code)),
+                contentDescription = product.name,
                 modifier = Modifier
                     .height(120.dp)
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp)
+                    .clip(RoundedCornerShape(4.dp))
                     .clickable { navController.navigate(Routes.ProductDetail.createRoute(product.code)) },
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Imagen")
-            }
-            Text(product.name, fontWeight = FontWeight.Bold, maxLines = 1, fontSize = 14.sp)
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = product.name,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 14.sp
+            )
             Text("Categoría: ${product.category}", fontSize = 12.sp, color = Color.Gray)
             Text(formatCurrency(product.price), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(8.dp))
