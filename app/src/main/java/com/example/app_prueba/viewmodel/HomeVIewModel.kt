@@ -1,8 +1,10 @@
 package com.example.app_prueba.viewmodel
 
 import android.app.Application
+import androidx.annotation.DrawableRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.app_prueba.R
 import com.example.app_prueba.application.LevelUpGamerApp
 import com.example.app_prueba.data.model.CartItem
 import com.example.app_prueba.data.model.Product
@@ -10,9 +12,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import com.example.app_prueba.data.database.APP_CATEGORIES_LIST
 
-data class ProductCategory(val name: String, val imageUrl: String = "")
+// Ahora la categoría incluye un recurso de imagen
+data class ProductCategory(
+    val name: String,
+    @DrawableRes val imageRes: Int
+)
 
 data class HomeState(
     val featuredProducts: List<Product> = emptyList(),
@@ -35,7 +40,29 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val allProducts = productDao.getAllProducts().first()
             val featured = allProducts.take(6)
-            val categories = APP_CATEGORIES_LIST.map { ProductCategory(name = it) }
+
+            // Mapeo de nombres de categoría a recursos de imagen
+            val categoryImages = mapOf(
+                "Juegos de Mesa" to R.drawable.catan,
+                "Accesorios" to R.drawable.accesorios,
+                "Consolas" to R.drawable.consolas,
+                "Computadores Gamers" to R.drawable.pcgamer_asus,
+                "Sillas Gamers" to R.drawable.silla_gamer,
+                "Mouse" to R.drawable.mouse_logitech,
+                "Mousepad" to R.drawable.mousepad_razer,
+                "Poleras Personalizadas" to R.drawable.poleragamer_personalizada
+            )
+
+            val categories = allProducts
+                .map { it.category }
+                .distinct()
+                .map { categoryName ->
+                    ProductCategory(
+                        name = categoryName,
+                        imageRes = categoryImages[categoryName] ?: R.drawable.product // Usa una imagen por defecto
+                    )
+                }
+                .take(5)
 
             _uiState.value = HomeState(
                 featuredProducts = featured,

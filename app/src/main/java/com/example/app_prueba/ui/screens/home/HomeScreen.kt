@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.app_prueba.R
 import com.example.app_prueba.data.model.Product
 import com.example.app_prueba.navigation.Routes
 import com.example.app_prueba.ui.components.Footer
@@ -58,7 +59,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                     columns = GridCells.Adaptive(minSize = 160.dp),
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        .height(( (uiState.featuredProducts.size + 1) / 2 * 290 ).dp),
+                        .height( ( (uiState.featuredProducts.size + 1) / 2 * 290 ).dp ),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     userScrollEnabled = false
@@ -84,31 +85,36 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
 
 @Composable
 fun HeroBanner(navController: NavController) {
-    Box(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(250.dp)
-            .padding(16.dp)
-            .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(16.dp)
-            ),
-        contentAlignment = Alignment.Center
+            .padding(16.dp),
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "Equipamiento Gamer",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Image(
+                painter = painterResource(id = R.drawable.banner),
+                contentDescription = "Banner principal",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
-            Text(
-                text = "Consolas, PCs, Sillas y más",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.tertiary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { navController.navigate(Routes.Products.route) }) {
-                Text("¡Explorar ahora!")
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Equipamiento Gamer",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "Consolas, PCs, Sillas y más",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { navController.navigate(Routes.Products.route) }) {
+                    Text("¡Explorar ahora!")
+                }
             }
         }
     }
@@ -127,15 +133,14 @@ fun CategoriesSection(categories: List<ProductCategory>, navController: NavContr
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.clickable { navController.navigate(Routes.Products.route) }
                 ) {
-                    Box(
+                    Image(
+                        painter = painterResource(id = category.imageRes),
+                        contentDescription = category.name,
                         modifier = Modifier
                             .size(80.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Img", fontSize = 12.sp)
-                    }
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
                     Text(
                         text = category.name,
                         fontSize = 12.sp,
@@ -188,17 +193,8 @@ fun ProductCard(product: Product, onCardClick: () -> Unit, onAddToCartClick: () 
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 14.sp
             )
-            Text(
-                text = "Categoría: ${product.category}",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-            Text(
-                text = formatCurrency(product.price),
-                color = MaterialTheme.colorScheme.secondary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
+            Text("Categoría: ${product.category}", fontSize = 12.sp, color = Color.Gray)
+            Text(formatCurrency(product.price), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = { onAddToCartClick() },
