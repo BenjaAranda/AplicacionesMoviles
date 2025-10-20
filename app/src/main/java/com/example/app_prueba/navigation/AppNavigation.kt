@@ -24,8 +24,7 @@ import com.example.app_prueba.ui.screens.home.HomeScreen
 import com.example.app_prueba.ui.screens.login.LoginScreen
 import com.example.app_prueba.ui.screens.products.ProductsScreen
 import com.example.app_prueba.ui.screens.register.RegisterScreen
-
-
+import com.example.app_prueba.ui.screens.puntos.PuntosScreen
 import com.example.app_prueba.ui.theme.AppPruebaTheme
 import androidx.compose.material3.MaterialTheme
 
@@ -39,12 +38,10 @@ fun AppNavigation() {
 
         Scaffold(
             topBar = {
-
                 TopBar(navController = navController)
             },
             bottomBar = {
                 NavigationBar(
-
                     containerColor = MaterialTheme.colorScheme.surface
                 ) {
                     val items = listOf(
@@ -83,7 +80,7 @@ fun AppNavigation() {
                 startDestination = Routes.Home.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
-
+                // Todas las rutas de la aplicación
                 composable(Routes.Login.route) { LoginScreen(navController = navController) }
                 composable(Routes.Register.route) { RegisterScreen(navController = navController) }
                 composable(Routes.Home.route) { HomeScreen(navController = navController) }
@@ -93,6 +90,11 @@ fun AppNavigation() {
                 composable(Routes.Contact.route) { ContactScreen(navController = navController) }
                 composable(Routes.Cart.route) { CartScreen(navController = navController) }
                 composable(Routes.Account.route) { AccountScreen(navController = navController) }
+
+                // Ruta de Puntos (CORREGIDA)
+                composable(route = Routes.Points.route) { PuntosScreen(navController = navController) }
+
+                // Ruta de Detalles del Producto
                 composable(
                     route = Routes.ProductDetail.route,
                     arguments = listOf(navArgument("productId") { type = NavType.StringType })
