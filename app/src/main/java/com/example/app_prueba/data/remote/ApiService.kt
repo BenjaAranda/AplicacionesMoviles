@@ -7,11 +7,6 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface ApiService {
-
-    // Define el endpoint POST en la ruta "register"
-    // Esto llamará a http://10.0.2.2:5000/api/register
     @POST("register")
-    suspend fun registerUser(
-        @Body user: UserRegisterRequest
-    ): Response<AuthResponse>
+    suspend fun registerUser(@Body user: UserRegisterRequest): Response<AuthResponse>
 }

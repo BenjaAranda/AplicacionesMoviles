@@ -1,18 +1,26 @@
 package com.example.app_prueba.data.remote
 
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
 
-    // 10.0.2.2 es la IP especial que usa el emulador de Android
-    // para conectarse al "localhost" de tu computador.
-    // El puerto 5000 es donde está corriendo tu API de Flask.
     private const val BASE_URL = "http://10.0.2.2:5000/api/"
+
+    private val client: OkHttpClient by lazy {
+        val interceptor = HttpLoggingInterceptor()
+        interceptor.level = HttpLoggingInterceptor.Level.BODY
+        OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+    }
 
     val api: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
