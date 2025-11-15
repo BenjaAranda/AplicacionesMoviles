@@ -5,19 +5,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.app_prueba.navigation.Routes
-import com.example.app_prueba.ui.theme.MoradoNeon
-import com.example.app_prueba.ui.theme.VerdeNeon
 import com.example.app_prueba.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, vm: LoginViewModel = viewModel()) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -29,18 +27,16 @@ fun LoginScreen(navController: NavController, vm: LoginViewModel = viewModel()) 
         Spacer(modifier = Modifier.height(32.dp))
 
         val customTextFieldColors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White,
-            focusedBorderColor = VerdeNeon,
-            unfocusedBorderColor = MoradoNeon,
-            cursorColor = VerdeNeon,
-            focusedLabelColor = VerdeNeon,
-            unfocusedLabelColor = MoradoNeon
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            cursorColor = MaterialTheme.colorScheme.primary,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
         )
 
-        val customButtonColors = ButtonDefaults.buttonColors(
-            containerColor = MoradoNeon,
-            contentColor = Color.White,
+        val primaryButtonColors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
         )
 
         OutlinedTextField(
@@ -76,13 +72,14 @@ fun LoginScreen(navController: NavController, vm: LoginViewModel = viewModel()) 
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            colors = customButtonColors
+            colors = primaryButtonColors
         ) {
             Text("Entrar")
         }
 
         TextButton(onClick = { navController.navigate(Routes.Register.route) }) {
-            Text("¿No tienes cuenta? Regístrate", color = MoradoNeon)
+
+            Text("¿No tienes cuenta? Regístrate")
         }
     }
 }

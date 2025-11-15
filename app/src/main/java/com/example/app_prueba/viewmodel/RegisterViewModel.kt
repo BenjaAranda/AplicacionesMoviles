@@ -8,10 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.app_prueba.application.LevelUpGamerApp
 import com.example.app_prueba.data.model.User
-import com.example.app_prueba.data.model.UserRegisterRequest
-import com.example.app_prueba.repository.UserRepository
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 class RegisterViewModel(application: Application) : AndroidViewModel(application) {
     var email by mutableStateOf("")
@@ -19,7 +16,6 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
     var confirmPass by mutableStateOf("")
     var registerError by mutableStateOf<String?>(null)
 
-    private val repository = UserRepository()
     private val userDao = (application as LevelUpGamerApp).database.userDao()
 
     fun onRegister(onSuccess: () -> Unit) {
@@ -28,43 +24,25 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
             return
         }
 
-        val hasDuocDiscount = email.lowercase().endsWith("@duoc.cl") || email.lowercase().endsWith("@duocuc.cl")
-        val userRequest = UserRegisterRequest(
-            email = email,
-            pass = pass,
-            hasDuocDiscount = hasDuocDiscount
-        )
-
         viewModelScope.launch {
-            try {
-                val response = repository.registerUser(userRequest)
-
-                if (response.isSuccessful && response.body() != null) {
-                    if (response.body()!!.success) {
-                        registerError = null
-
-                        // Guardamos el usuario en la BD local (Room) para la sesión
-                        val newUser = User(
-                            email = userRequest.email,
-                            pass = userRequest.pass,
-                            hasDuocDiscount = userRequest.hasDuocDiscount
-                        )
-                        userDao.insert(newUser)
-
-                        SessionViewModel.onLoginSuccess(newUser.email, newUser.hasDuocDiscount)
-                        onSuccess()
-                    } else {
-                        registerError = response.body()?.message ?: "Error desconocido"
-                    }
-                } else {
-                    registerError = "Error del servidor: ${response.code()}"
-                }
-
-            } catch (e: IOException) {
-                registerError = "Error de red: No se pudo conectar al servidor."
-            } catch (e: Exception) {
-                registerError = "Error inesperado: ${e.message}"
+            if (userDao.getUserByEmail(email) != null) {
+                registerError = "El correo electrónico ya está en uso."
+                return@launch
             }
+
+            val hasDuocDiscount = email.lowercase().endsWith("@duoc.cl") || email.lowercase().endsWith("@duocuc.cl")
+
+            val newUser = User(
+                email = email,
+                pass = pass,
+                hasDuocDiscount = hasDuocDiscount
+            )
+
+            userDao.insert(newUser)
+            registerError = null
+            // Inicia sesión automáticamente y guarda el estado del descuento
+            SessionViewModel.onLoginSuccess(newUser.email, newUser.hasDuocDiscount)
+            onSuccess()
         }
     }
 }

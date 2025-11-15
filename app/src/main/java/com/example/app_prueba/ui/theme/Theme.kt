@@ -44,3 +44,29 @@ fun LevelUpGamerTheme(
         content = content
     )
 }
+
+// 1. Define tus colores personalizados
+val CustomGreen = Color(0xFF38D717) // Un verde neón
+val CustomPurple = Color(0xFF9013FE) // Un morado claro para texto
+
+// 2. Crea el esquema de colores para el modo oscuro/claro
+private val DarkColorPalette = darkColorScheme(
+    primary = CustomGreen,        // Color principal para botones, indicadores, etc.
+    onPrimary = Color.Black,      // Color del texto/iconos sobre el color primario
+    secondary = CustomGreen,      // Color secundario
+    onSecondary = Color.Black,    // Texto/iconos sobre el color secundario
+    surface = Color(0xFF1C1C1E),  // Color de fondo de superficies como cards, nav bars
+    onSurface = CustomPurple,     // Color principal del texto sobre fondos
+    background = Color(0xFF000000), // Color de fondo general de la app
+    onBackground = CustomPurple   // Color del texto sobre el fondo general
+)
+
+// 3. Crea el Composable del Tema que envolverá tu app
+@Composable
+fun AppPruebaTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = DarkColorPalette,
+        // Aquí puedes definir tipografía y formas también
+        content = content
+    )
+}
