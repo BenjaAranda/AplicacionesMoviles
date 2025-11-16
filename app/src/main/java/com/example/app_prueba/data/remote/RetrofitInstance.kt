@@ -9,13 +9,13 @@ object RetrofitInstance {
 
     private const val BASE_URL = "http://10.0.2.2:5000/api/"
 
-    private val client: OkHttpClient by lazy {
-        val interceptor = HttpLoggingInterceptor()
-        interceptor.level = HttpLoggingInterceptor.Level.BODY
-        OkHttpClient.Builder()
-            .addInterceptor(interceptor)
-            .build()
+    private val interceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
     }
+
+    private val client = OkHttpClient.Builder()
+        .addInterceptor(interceptor)
+        .build()
 
     val api: ApiService by lazy {
         Retrofit.Builder()
