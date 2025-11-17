@@ -52,6 +52,15 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
     } else {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             item { HeroBanner(navController) }
+
+            // --- 1. AÑADIMOS EL BLOQUE DE LA API EXTERNA ---
+            if (uiState.pokemonName != null) {
+                item {
+                    ExternalApiDemo(pokemonName = uiState.pokemonName!!)
+                }
+            }
+            // --- FIN DEL BLOQUE NUEVO ---
+
             item { CategoriesSection(uiState.categories, navController) }
             item { SectionTitle("PRODUCTOS DESTACADOS") }
             item {
@@ -82,6 +91,36 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
         }
     }
 }
+
+// --- 2. AÑADIMOS ESTE COMPOSABLE NUEVO AL FINAL ---
+@Composable
+fun ExternalApiDemo(pokemonName: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.tertiaryContainer)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "¡Demo de API Externa (PokeAPI)!",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onTertiaryContainer
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Conectado exitosamente. Pokémon obtenido: $pokemonName",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onTertiaryContainer,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+// --- FIN DEL COMPOSABLE NUEVO ---
+
 
 @Composable
 fun HeroBanner(navController: NavController) {
@@ -211,5 +250,6 @@ fun ProductCard(product: Product, onCardClick: () -> Unit, onAddToCartClick: () 
 fun formatCurrency(price: Double): String {
     val format = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
     format.maximumFractionDigits = 0
-    return "CLP$${format.format(price).trim()}"
+    // Removido el "CLP$" duplicado y el trim, ya que el formato de moneda chileno ya lo incluye.
+    return format.format(price)
 }

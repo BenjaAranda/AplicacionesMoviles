@@ -2,6 +2,7 @@ package com.example.app_prueba.repository
 
 import com.example.app_prueba.data.model.AuthResponse
 import com.example.app_prueba.data.model.LoginRequest
+import com.example.app_prueba.data.model.Pokemon // <-- 1. IMPORTAR MODELO
 import com.example.app_prueba.data.model.UserRegisterRequest
 import com.example.app_prueba.data.remote.RetrofitInstance
 import retrofit2.Response
@@ -19,5 +20,9 @@ class UserRepository {
         return api.loginUser(request)
     }
 
-    // Puedes añadir más funciones (products, cart, orders) aquí.
+    // --- 2. AÑADIR NUEVA FUNCIÓN PARA API EXTERNA ---
+    suspend fun getDitto(): Response<Pokemon> {
+        // La URL completa ("https://pokeapi.co/...") está en ApiService
+        return api.getDitto()
+    }
 }

@@ -8,10 +8,12 @@ import com.example.app_prueba.R
 import com.example.app_prueba.application.LevelUpGamerApp
 import com.example.app_prueba.data.model.CartItem
 import com.example.app_prueba.data.model.Product
+import com.example.app_prueba.repository.UserRepository // <-- 1. IMPORTAR REPOSITORIO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.Locale // <-- Importar Locale (necesario para el replaceFirstChar)
 
 data class ProductCategory(
     val name: String,
@@ -21,15 +23,20 @@ data class ProductCategory(
 data class HomeState(
     val featuredProducts: List<Product> = emptyList(),
     val categories: List<ProductCategory> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val pokemonName: String? = null // <-- 2. AÑADIR CAMPO PARA API EXTERNA
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(HomeState())
     val uiState = _uiState.asStateFlow()
 
+    // DAOs locales
     private val productDao = (application as LevelUpGamerApp).database.productDao()
     private val cartDao = (application as LevelUpGamerApp).database.cartDao()
+
+    // --- 3. AÑADIR REPOSITORIO PARA RED ---
+    private val repository = UserRepository()
 
     init {
         loadHomePageContent()
@@ -37,6 +44,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadHomePageContent() {
         viewModelScope.launch {
+            // --- 4. Carga local (como ya la tenías) ---
             val allProducts = productDao.getAllProducts().first()
             val featured = allProducts.take(6)
 
@@ -62,10 +70,27 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 .take(5)
 
+            // --- 5. NUEVO: Carga remota (API Externa) ---
+            val pokemonNameResult: String? = try {
+                val response = repository.getDitto()
+                if (response.isSuccessful && response.body() != null) {
+                    // Capitalizamos el nombre para que se vea mejor
+                    response.body()!!.name.replaceFirstChar {
+                        if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                    }
+                } else {
+                    "Error al cargar Pokémon"
+                }
+            } catch (e: Exception) {
+                "Error de red: ${e.message}"
+            }
+
+            // --- 6. Actualizar el estado con TODOS los datos ---
             _uiState.value = HomeState(
                 featuredProducts = featured,
                 categories = categories,
-                isLoading = false
+                isLoading = false,
+                pokemonName = pokemonNameResult // <-- Asignar el resultado
             )
         }
     }
