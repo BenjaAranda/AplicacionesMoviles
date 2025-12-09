@@ -88,7 +88,8 @@ fun CartScreen(navController: NavController, vm: CartViewModel = viewModel()) {
                 CartSummary(
                     subtotal = state.subtotal,
                     discount = state.discount,
-                    total = state.total
+                    total = state.total,
+                    navController = navController
                 )
             }
         }
@@ -128,7 +129,7 @@ fun CartItemRow(item: CartItem, onIncrease: () -> Unit, onDecrease: () -> Unit) 
 }
 
 @Composable
-fun CartSummary(subtotal: Double, discount: Double, total: Double) {
+fun CartSummary(subtotal: Double, discount: Double, total: Double, navController: NavController) { // <--- 1. Agrega NavController aquí
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -143,7 +144,7 @@ fun CartSummary(subtotal: Double, discount: Double, total: Double) {
         SummaryRow("Total:", formatCurrency(total), fontWeight = FontWeight.Bold, isTotal = true)
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { /* Lógica para pagar irá aquí */ },
+            onClick = { navController.navigate("checkout") },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("IR A PAGAR", fontSize = 18.sp)

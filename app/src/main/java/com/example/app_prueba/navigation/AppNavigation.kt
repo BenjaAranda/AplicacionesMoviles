@@ -90,6 +90,7 @@ fun AppNavigation() {
                 composable(Routes.Contact.route) { ContactScreen(navController = navController) }
                 composable(Routes.Cart.route) { CartScreen(navController = navController) }
                 composable(Routes.Account.route) { AccountScreen(navController = navController) }
+                composable(Routes.Cart.route) { CartScreen(navController = navController) }
 
                 // Ruta de Puntos (CORREGIDA)
                 composable(route = Routes.Points.route) { PuntosScreen(navController = navController) }
@@ -103,6 +104,18 @@ fun AppNavigation() {
                     requireNotNull(productId)
                     ProductDetailScreen(productId = productId, navController = navController)
                 }
+
+                composable(Routes.Checkout.route) {
+                    val cartViewModel: com.example.app_prueba.viewmodel.CartViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
+                    com.example.app_prueba.ui.screens.checkout.CheckoutScreen(
+                        navController = navController,
+                        cartViewModel = cartViewModel
+                    )
+                }
+
+                composable(Routes.Account.route) { AccountScreen(navController = navController) }
+
             }
         }
     }
