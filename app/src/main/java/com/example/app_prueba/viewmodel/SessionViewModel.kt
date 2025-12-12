@@ -12,18 +12,25 @@ object SessionViewModel : ViewModel() {
     var currentUserEmail by mutableStateOf<String?>(null)
         private set
 
-    var hasDuocDiscount by mutableStateOf(false) // Campo para saber si tiene descuento
+    var hasDuocDiscount by mutableStateOf(false)
         private set
 
-    fun onLoginSuccess(email: String, discount: Boolean) {
+    // --- NUEVO: Variable para guardar el Token JWT ---
+    var userToken by mutableStateOf<String?>(null)
+        private set
+
+    // --- ACTUALIZADO: Ahora recibe el token ---
+    fun onLoginSuccess(email: String, discount: Boolean, token: String?) {
         isLoggedIn = true
         currentUserEmail = email
         hasDuocDiscount = discount
+        userToken = token // Guardamos el token para usarlo en el carrito
     }
 
     fun onLogout() {
         isLoggedIn = false
         currentUserEmail = null
         hasDuocDiscount = false
+        userToken = null // Limpiamos el token al salir
     }
 }

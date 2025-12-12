@@ -36,10 +36,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 val response = repository.loginUser(request)
 
                 if (response.isSuccessful && response.body() != null) {
-                    val body = response.body()!! // body es AuthResponse
+                    val body = response.body()!!
 
-                    // --- INICIO DE CORRECCIÓN ---
-                    // Ahora accedemos a 'body.data.token' y 'body.data.user'
+                    // Verificamos éxito y que exista el token
                     if (body.success && body.data?.token != null) {
 
                         val userFromResponse = body.data.user
@@ -47,11 +46,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                         var userHasDuoc = false
 
                         if (userFromResponse != null) {
-                            // Si el backend nos dio un usuario, lo usamos
                             val localUser = com.example.app_prueba.data.model.User(
                                 email = userFromResponse.email,
-                                pass = pass, // Guardamos el pass que el usuario tipeó
-                                name = userFromResponse.name, // 'name' ya es String?
+                                pass = pass,
+                                name = userFromResponse.name,
                                 hasDuocDiscount = userFromResponse.hasDuocDiscount
                             )
                             userDao.insert(localUser)
@@ -59,16 +57,18 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                             userEmail = localUser.email
                             userHasDuoc = localUser.hasDuocDiscount
                         } else {
-                            // Fallback por si 'user' es nulo
                             userHasDuoc = userEmail.endsWith("@duoc.cl") || userEmail.endsWith("@duocuc.cl")
                         }
 
-                        // Manejar sesión global
-                        SessionViewModel.onLoginSuccess(userEmail, userHasDuoc)
+                        // --- CORREGIDO: Pasamos el token al SessionViewModel ---
+                        SessionViewModel.onLoginSuccess(
+                            email = userEmail,
+                            discount = userHasDuoc,
+                            token = body.data.token // <-- Token del backend
+                        )
 
                         loginError = null
                         onSuccess()
-                        // --- FIN DE CORRECCIÓN ---
                     } else {
                         loginError = body.message
                     }

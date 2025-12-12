@@ -1,29 +1,19 @@
-// ruta: data/remote/ApiService.kt
 package com.example.app_prueba.data.remote
 
-import com.example.app_prueba.data.model.AuthResponse
-import com.example.app_prueba.data.model.LoginRequest
-import com.example.app_prueba.data.model.Product // Asegúrate de que esté importado
-import com.example.app_prueba.data.model.ProductDetailResponse
-import com.example.app_prueba.data.model.ProductListResponse
-import com.example.app_prueba.data.model.Pokemon // <-- 1. IMPORTA EL NUEVO MODELO
-import com.example.app_prueba.data.model.UserRegisterRequest
+import com.example.app_prueba.data.model.*
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface ApiService {
 
-    // --- Tus rutas ---
+    // --- USUARIOS ---
     @POST("register")
     suspend fun registerUser(@Body user: UserRegisterRequest): Response<AuthResponse>
 
     @POST("login")
     suspend fun loginUser(@Body loginRequest: LoginRequest): Response<AuthResponse>
 
+    // --- PRODUCTOS ---
     @GET("products")
     suspend fun listProducts(
         @Query("q") q: String? = null,
@@ -33,7 +23,28 @@ interface ApiService {
     @GET("products/{id}")
     suspend fun getProduct(@Path("id") id: Int): Response<ProductDetailResponse>
 
-    // --- 2. AÑADE ESTA FUNCIÓN PARA LA API EXTERNA ---
+    // --- API EXTERNA ---
     @GET("https://pokeapi.co/api/v2/pokemon/ditto")
     suspend fun getDitto(): Response<Pokemon>
+
+    // --- CARRITO (NUEVO) ---
+    // El backend espera el token en el Header (Authorization: Bearer <token>)
+    // Retrofit puede manejar esto, o lo pasamos manual. Por ahora manual es más fácil de entender.
+
+    @GET("cart")
+    suspend fun getCart(
+        @Header("Authorization") token: String
+    ): Response<CartListResponse> // Necesitaremos crear este modelo abajo
+
+    @POST("cart")
+    suspend fun addToCart(
+        @Header("Authorization") token: String,
+        @Body request: AddToCartRequest // Necesitaremos crear este modelo
+    ): Response<SimpleResponse> // Respuesta genérica
+
+    // --- ÓRDENES (NUEVO) ---
+    @POST("orders")
+    suspend fun createOrder(
+        @Header("Authorization") token: String
+    ): Response<OrderResponse> // Necesitaremos crear este modelo
 }

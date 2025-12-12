@@ -29,7 +29,7 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
     private val userDao = (application as LevelUpGamerApp).database.userDao()
 
     fun onRegister(onSuccess: () -> Unit) {
-        // Validaciones locales antes de llamar al backend
+        // Validaciones locales
         if (!isOfAge) {
             registerError = "Debes ser mayor de 18 años."
             return
@@ -51,44 +51,40 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
             return
         }
 
-        // Prepara request
         val hasDuocDiscount = email.lowercase().endsWith("@duoc.cl") || email.lowercase().endsWith("@duocuc.cl")
 
-        // --- INICIO DE CORRECCIÓN ---
         val request = UserRegisterRequest(
             email = email.trim().lowercase(),
             pass = pass,
-            // Esto ahora es válido porque UserRegisterRequest.name es String?
             name = if (name.isBlank()) null else name.trim(),
-
-            // CORREGIDO: El nombre del parámetro debe ser camelCase
             hasDuocDiscount = hasDuocDiscount
         )
-        // --- FIN DE CORRECCIÓN ---
 
         viewModelScope.launch {
             isLoading = true
             registerError = null
             try {
-                // NOTA: El backend /api/register devuelve un 'AuthResponse' que en tu
-                // app.py SÍ tiene un token. Asumo que tu 'repository.registerUser'
-                // usa el 'AuthResponse' que definimos arriba.
                 val response = repository.registerUser(request)
 
                 if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!
                     if (body.success) {
-                        // guardar usuario localmente (Room) para sesión offline
+                        // Guardar usuario localmente
                         val newUser = User(
                             email = request.email,
                             pass = request.pass,
-                            name = request.name, // 'name' ya es String?
+                            name = request.name,
                             hasDuocDiscount = hasDuocDiscount
                         )
                         userDao.insert(newUser)
 
-                        // Guardar sesión
-                        SessionViewModel.onLoginSuccess(newUser.email, newUser.hasDuocDiscount)
+                        // --- CORREGIDO: Pasamos el token al SessionViewModel ---
+                        // El endpoint de registro también devuelve el token en body.data.token
+                        SessionViewModel.onLoginSuccess(
+                            email = newUser.email,
+                            discount = newUser.hasDuocDiscount,
+                            token = body.data?.token // <-- Token del backend
+                        )
 
                         registerError = null
                         onSuccess()
