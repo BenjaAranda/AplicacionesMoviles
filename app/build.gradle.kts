@@ -10,6 +10,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
+
         applicationId = "com.example.app_prueba"
         minSdk = 30
         targetSdk = 35
@@ -43,11 +44,15 @@ android {
     }
     packaging {
         resources {
+            // Esta línea ya la tenías:
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+
+            // AGREGA ESTAS LÍNEAS NUEVAS:
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
         }
     }
 }
-
 dependencies {
 
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
@@ -71,6 +76,15 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+
+    androidTestImplementation("androidx.room:room-testing:2.6.1")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("com.google.accompanist:accompanist-navigation-animation:0.32.0")
@@ -83,6 +97,12 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
+
+    // AGREGA ESTA LÍNEA PARA MOCKK:
+    testImplementation("io.mockk:mockk:1.13.12")
+
+    // Si planeas usarlo también en pruebas de UI (androidTest), agrega esta también:
+    androidTestImplementation("io.mockk:mockk-android:1.13.12")
 
     // --- DEPENDENCIAS DE RETROFIT AÑADIDAS ---
     // Retrofit para las llamadas a la API

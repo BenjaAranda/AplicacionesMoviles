@@ -11,7 +11,10 @@ import com.example.app_prueba.R
  * @return El ID del recurso de la imagen correspondiente.
  */
 @Composable
-fun getProductImage(productCode: String): Int {
+fun getProductImage(productCode: String?): Int {
+    if (productCode == null) {
+        return R.drawable.ic_launcher_foreground // O tu imagen de "sin foto"
+    }
     return when (productCode.uppercase()) {
         // Juegos de Mesa
         "JM001" -> R.drawable.catan
