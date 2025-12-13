@@ -23,12 +23,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-// Importa las clases de estado desde el ViewModel
-import com.example.app_prueba.viewmodel.BenefitItem
-import com.example.app_prueba.viewmodel.HistoryItem
+
+
 import com.example.app_prueba.viewmodel.PointUiState
 import com.example.app_prueba.viewmodel.PointViewModel
-import com.example.app_prueba.viewmodel.RewardItem
+
+import com.example.app_prueba.data.model.BenefitItem
+import com.example.app_prueba.data.model.HistoryItem
+import com.example.app_prueba.data.model.RewardItem
 
 // --- Colores (pueden moverse a un archivo Theme.kt) ---
 val DarkBackground = Color(0xFF000000)

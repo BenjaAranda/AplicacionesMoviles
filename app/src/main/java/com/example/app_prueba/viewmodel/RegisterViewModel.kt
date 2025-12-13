@@ -13,7 +13,15 @@ import com.example.app_prueba.repository.UserRepository
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-class RegisterViewModel(application: Application) : AndroidViewModel(application) {
+// NOTA EL CAMBIO AQUÍ: Agregamos 'userRepository' al paréntesis del constructor
+class RegisterViewModel(
+    application: Application,
+    private val userRepository: UserRepository = UserRepository() // <-- CRUCIAL: Valor por defecto para no romper el resto de la app
+) : AndroidViewModel(application) {
+
+    // --- IMPORTANTE: ELIMINA LA LÍNEA ANTIGUA QUE DECÍA: ---
+    // private val repository = UserRepository()
+    // (Si la dejas, el test fallará siempre)
 
     var email by mutableStateOf("")
     var pass by mutableStateOf("")
@@ -25,11 +33,9 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
     var registerError by mutableStateOf<String?>(null)
     var isLoading by mutableStateOf(false)
 
-    private val repository = UserRepository()
     private val userDao = (application as LevelUpGamerApp).database.userDao()
 
     fun onRegister(onSuccess: () -> Unit) {
-        // Validaciones locales
         if (!isOfAge) {
             registerError = "Debes ser mayor de 18 años."
             return
@@ -64,12 +70,12 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
             isLoading = true
             registerError = null
             try {
-                val response = repository.registerUser(request)
+                // USAMOS LA VARIABLE DEL CONSTRUCTOR (userRepository)
+                val response = userRepository.registerUser(request)
 
                 if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!
                     if (body.success) {
-                        // Guardar usuario localmente
                         val newUser = User(
                             email = request.email,
                             pass = request.pass,
@@ -78,12 +84,10 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
                         )
                         userDao.insert(newUser)
 
-                        // --- CORREGIDO: Pasamos el token al SessionViewModel ---
-                        // El endpoint de registro también devuelve el token en body.data.token
                         SessionViewModel.onLoginSuccess(
                             email = newUser.email,
                             discount = newUser.hasDuocDiscount,
-                            token = body.data?.token // <-- Token del backend
+                            token = body.data?.token
                         )
 
                         registerError = null

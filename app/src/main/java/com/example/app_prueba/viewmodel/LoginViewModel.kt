@@ -14,12 +14,18 @@ import java.io.IOException
 
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
+    // --- CAMBIO CLAVE PARA TESTING ---
+    // Usamos 'var' para que el Test pueda inyectar un Mock (falso) aquí.
+    var userRepository: UserRepository = UserRepository()
+
     var email by mutableStateOf("")
     var pass by mutableStateOf("")
     var loginError by mutableStateOf<String?>(null)
     var isLoading by mutableStateOf(false)
 
-    private val repository = UserRepository()
+    // --- ELIMINADO: private val repository = UserRepository() ---
+    // Ya no lo necesitamos porque usaremos 'userRepository' de arriba.
+
     private val userDao = (application as LevelUpGamerApp).database.userDao()
 
     fun onLogin(onSuccess: () -> Unit) {
@@ -33,7 +39,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             loginError = null
             try {
                 val request = LoginRequest(email.trim().lowercase(), pass)
-                val response = repository.loginUser(request)
+
+                // --- USO DE LA VARIABLE CORRECTA ---
+                // Ahora usamos 'userRepository', así el test puede controlar la respuesta.
+                val response = userRepository.loginUser(request)
 
                 if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!
@@ -60,11 +69,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                             userHasDuoc = userEmail.endsWith("@duoc.cl") || userEmail.endsWith("@duocuc.cl")
                         }
 
-                        // --- CORREGIDO: Pasamos el token al SessionViewModel ---
+                        // Guardamos sesión
                         SessionViewModel.onLoginSuccess(
                             email = userEmail,
                             discount = userHasDuoc,
-                            token = body.data.token // <-- Token del backend
+                            token = body.data.token
                         )
 
                         loginError = null

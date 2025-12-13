@@ -47,4 +47,26 @@ interface ApiService {
     suspend fun createOrder(
         @Header("Authorization") token: String
     ): Response<OrderResponse> // Necesitaremos crear este modelo
+
+    // 1. Obtener resumen de puntos del usuario
+    @GET("points/summary")
+    suspend fun getPointsSummary(): Response<UserPointsSummary>
+
+    // 2. Obtener historial (con filtro opcional)
+    @GET("points/history")
+    suspend fun getPointsHistory(
+        @Query("filter") filter: String
+    ): Response<List<HistoryItem>>
+
+    // 3. Obtener beneficios activos
+    @GET("points/benefits")
+    suspend fun getBenefits(): Response<List<BenefitItem>>
+
+    // 4. Obtener recompensas disponibles
+    @GET("points/rewards")
+    suspend fun getRewards(): Response<List<RewardItem>>
+
+    // 5. Canjear una recompensa
+    @POST("points/redeem/{rewardId}")
+    suspend fun redeemReward(@Path("rewardId") rewardId: String): Response<Unit>
 }
