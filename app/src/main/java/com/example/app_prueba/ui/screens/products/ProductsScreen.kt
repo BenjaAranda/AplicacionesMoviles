@@ -34,10 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.app_prueba.R
 import com.example.app_prueba.data.model.Product
 import com.example.app_prueba.navigation.Routes
 import com.example.app_prueba.ui.components.Footer
-import com.example.app_prueba.ui.util.getProductImage
 import com.example.app_prueba.viewmodel.ProductsViewModel
 import com.example.app_prueba.viewmodel.SortOption
 import java.text.NumberFormat
@@ -89,13 +89,16 @@ fun ProductsScreen(navController: NavController, vm: ProductsViewModel = viewMod
                 }
             }
         } else {
-            items(uiState.products, key = { it.code }) { product ->
+            // Usamos key = { it.id } porque es el único dato seguro que viene del backend
+            items(uiState.products, key = { it.id }) { product ->
                 ProductGridItem(
                     product = product,
                     navController = navController,
                     onAddToCartClick = {
                         vm.addToCart(product)
-                        Toast.makeText(context, "${product.name} añadido", Toast.LENGTH_SHORT).show()
+                        // Usamos product.name con protección por si es null
+                        val nombreProd = product.name ?: "Producto"
+                        Toast.makeText(context, "$nombreProd añadido", Toast.LENGTH_SHORT).show()
                     }
                 )
             }
@@ -191,6 +194,25 @@ fun ProductGridItem(product: Product, navController: NavController, onAddToCartC
     val isButtonPressed by buttonInteractionSource.collectIsPressedAsState()
     val buttonScale by animateFloatAsState(if(isButtonPressed) 1.1f else 1f, label = "buttonScale")
 
+    // --- CORRECCIÓN CRÍTICA: MANEJO SEGURO DE NULOS ---
+
+    // 1. Nombre seguro: Si es null, usamos texto vacío
+    val safeName = product.name ?: "Producto sin nombre"
+
+    // 2. Imagen basada en el nombre seguro
+    val imageRes = getProductImageByNameForGrid(safeName)
+
+    // 3. ID de Ruta seguro: Verificamos explícitamente si code es null
+    // El error 'length()' ocurría aquí porque product.code era null
+    val routeId = if (product.code != null && product.code.isNotEmpty()) {
+        product.code
+    } else {
+        product.id.toString()
+    }
+
+    // 4. Categoría segura
+    val safeCategory = product.category ?: "General"
+
     Card(
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -198,18 +220,21 @@ fun ProductGridItem(product: Product, navController: NavController, onAddToCartC
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Image(
-                painter = painterResource(id = getProductImage(product.code)),
-                contentDescription = product.name,
+                painter = painterResource(id = imageRes),
+                contentDescription = safeName,
                 modifier = Modifier
                     .height(120.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(4.dp))
-                    .clickable { navController.navigate(Routes.ProductDetail.createRoute(product.code)) },
+                    .clickable { navController.navigate(Routes.ProductDetail.createRoute(routeId)) },
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = product.name, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 14.sp)
-            Text("Categoría: ${product.category}", fontSize = 12.sp, color = Color.Gray)
+
+            // Usamos las variables seguras
+            Text(text = safeName, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 14.sp)
+            Text("Categoría: $safeCategory", fontSize = 12.sp, color = Color.Gray)
+
             Text(formatCurrency(product.price), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Button(
@@ -222,7 +247,7 @@ fun ProductGridItem(product: Product, navController: NavController, onAddToCartC
                 Text("Agregar al carrito", fontSize = 12.sp)
             }
             OutlinedButton(
-                onClick = { navController.navigate(Routes.ProductDetail.createRoute(product.code)) },
+                onClick = { navController.navigate(Routes.ProductDetail.createRoute(routeId)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(4.dp),
                 contentPadding = PaddingValues(vertical = 4.dp),
@@ -237,5 +262,47 @@ fun ProductGridItem(product: Product, navController: NavController, onAddToCartC
 fun formatCurrency(price: Double): String {
     val format = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
     format.maximumFractionDigits = 0
-    return "CLP$${format.format(price).trim()}"
+    return format.format(price)
+}
+
+// --- FUNCIÓN DE MAPEO SEGURA (IF-ELSE) ---
+fun getProductImageByNameForGrid(name: String): Int {
+    // Si el nombre viene vacío o nulo (manejado antes), devuelve default
+    if (name.isEmpty()) return R.drawable.product
+
+    val nameLower = name.lowercase().trim()
+
+    // Mapeo exacto basado en tu carpeta Drawable
+    if (nameLower.contains("catan")) return R.drawable.catan
+    if (nameLower.contains("carcassonne")) return R.drawable.carcassonne
+
+    // Accesorios
+    if (nameLower.contains("xbox") || nameLower.contains("control")) return R.drawable.control_xbox
+    if (nameLower.contains("hyperx") || nameLower.contains("auriculares")) return R.drawable.auriculares_hyperxcloud2
+
+    // Consolas
+    if (nameLower.contains("playstation") || nameLower.contains("ps5")) return R.drawable.playstation5
+
+    // PC Gamer
+    if (nameLower.contains("asus") || nameLower.contains("rog") || nameLower.contains("pc gamer")) return R.drawable.pcgamer_asus
+
+    // Sillas
+    if (nameLower.contains("secretlab") || nameLower.contains("titan") || nameLower.contains("silla")) return R.drawable.silla_gamer_titan
+
+    // Mouse y Mousepad
+    // Importante el orden: primero mousepad para que no se confunda con mouse
+    if (nameLower.contains("mousepad") || nameLower.contains("goliathus") || nameLower.contains("razer")) return R.drawable.mousepad_razer
+    if (nameLower.contains("logitech") || nameLower.contains("mouse")) return R.drawable.mouse_logitech
+
+    // Poleras
+    if (nameLower.contains("polera") || nameLower.contains("personalizada")) return R.drawable.poleragamer_personalizada
+
+    // Fallback general por si el nombre no coincide pero la categoría sí
+    if (nameLower.contains("mesa")) return R.drawable.catan
+    if (nameLower.contains("accesorio")) return R.drawable.accesorios
+    if (nameLower.contains("silla")) return R.drawable.silla_gamer
+    if (nameLower.contains("consola")) return R.drawable.consolas
+
+    // Imagen por defecto
+    return R.drawable.product
 }

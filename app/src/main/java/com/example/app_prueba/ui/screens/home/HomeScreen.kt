@@ -34,7 +34,6 @@ import com.example.app_prueba.R
 import com.example.app_prueba.data.model.Product
 import com.example.app_prueba.navigation.Routes
 import com.example.app_prueba.ui.components.Footer
-import com.example.app_prueba.ui.util.getProductImage
 import com.example.app_prueba.viewmodel.HomeViewModel
 import com.example.app_prueba.viewmodel.ProductCategory
 import java.text.NumberFormat
@@ -53,13 +52,12 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             item { HeroBanner(navController) }
 
-            // --- 1. AÑADIMOS EL BLOQUE DE LA API EXTERNA ---
+            // API Externa (Ditto)
             if (uiState.pokemonName != null) {
                 item {
                     ExternalApiDemo(pokemonName = uiState.pokemonName!!)
                 }
             }
-            // --- FIN DEL BLOQUE NUEVO ---
 
             item { CategoriesSection(uiState.categories, navController) }
             item { SectionTitle("PRODUCTOS DESTACADOS") }
@@ -77,11 +75,14 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                         ProductCard(
                             product = product,
                             onCardClick = {
-                                navController.navigate(Routes.ProductDetail.createRoute(product.code))
+                                // Usamos ID para la ruta, manejo seguro de código
+                                val routeId = if (product.code != null && product.code.isNotEmpty()) product.code else product.id.toString()
+                                navController.navigate(Routes.ProductDetail.createRoute(routeId))
                             },
                             onAddToCartClick = {
                                 homeViewModel.addToCart(product)
-                                Toast.makeText(context, "${product.name} añadido", Toast.LENGTH_SHORT).show()
+                                val nombre = product.name ?: "Producto"
+                                Toast.makeText(context, "$nombre añadido", Toast.LENGTH_SHORT).show()
                             }
                         )
                     }
@@ -92,7 +93,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
     }
 }
 
-// --- 2. AÑADIMOS ESTE COMPOSABLE NUEVO AL FINAL ---
 @Composable
 fun ExternalApiDemo(pokemonName: String) {
     Column(
@@ -119,8 +119,6 @@ fun ExternalApiDemo(pokemonName: String) {
         )
     }
 }
-// --- FIN DEL COMPOSABLE NUEVO ---
-
 
 @Composable
 fun HeroBanner(navController: NavController) {
@@ -207,6 +205,10 @@ fun SectionTitle(title: String) {
 
 @Composable
 fun ProductCard(product: Product, onCardClick: () -> Unit, onAddToCartClick: () -> Unit) {
+    // --- LÓGICA DE MAPEO DE IMÁGENES ACTUALIZADA ---
+    val safeName = product.name ?: ""
+    val imageRes = getHomeProductImage(safeName)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -216,8 +218,8 @@ fun ProductCard(product: Product, onCardClick: () -> Unit, onAddToCartClick: () 
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Image(
-                painter = painterResource(id = getProductImage(product.code)),
-                contentDescription = product.name,
+                painter = painterResource(id = imageRes),
+                contentDescription = safeName,
                 modifier = Modifier
                     .height(120.dp)
                     .fillMaxWidth()
@@ -226,13 +228,13 @@ fun ProductCard(product: Product, onCardClick: () -> Unit, onAddToCartClick: () 
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = product.name,
+                text = safeName,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 14.sp
             )
-            Text("Categoría: ${product.category}", fontSize = 12.sp, color = Color.Gray)
+            Text("Categoría: ${product.category ?: "General"}", fontSize = 12.sp, color = Color.Gray)
             Text(formatCurrency(product.price), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Button(
@@ -250,6 +252,42 @@ fun ProductCard(product: Product, onCardClick: () -> Unit, onAddToCartClick: () 
 fun formatCurrency(price: Double): String {
     val format = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
     format.maximumFractionDigits = 0
-    // Removido el "CLP$" duplicado y el trim, ya que el formato de moneda chileno ya lo incluye.
     return format.format(price)
+}
+
+// --- FUNCIÓN DE MAPEO PARA EL HOME (Idéntica a la de Productos para consistencia) ---
+fun getHomeProductImage(name: String): Int {
+    val nameLower = name.lowercase().trim()
+
+    // Juegos de Mesa
+    if (nameLower.contains("catan")) return R.drawable.catan
+    if (nameLower.contains("carcassonne")) return R.drawable.carcassonne
+
+    // Accesorios
+    if (nameLower.contains("xbox") || nameLower.contains("control")) return R.drawable.control_xbox
+    if (nameLower.contains("hyperx") || nameLower.contains("auriculares")) return R.drawable.auriculares_hyperxcloud2
+
+    // Consolas
+    if (nameLower.contains("playstation") || nameLower.contains("ps5")) return R.drawable.playstation5
+
+    // PC Gamer
+    if (nameLower.contains("asus") || nameLower.contains("rog") || nameLower.contains("pc gamer")) return R.drawable.pcgamer_asus
+
+    // Sillas
+    if (nameLower.contains("secretlab") || nameLower.contains("titan") || nameLower.contains("silla")) return R.drawable.silla_gamer_titan
+
+    // Mouse y Mousepad
+    if (nameLower.contains("mousepad") || nameLower.contains("goliathus") || nameLower.contains("razer")) return R.drawable.mousepad_razer
+    if (nameLower.contains("logitech") || nameLower.contains("mouse")) return R.drawable.mouse_logitech
+
+    // Poleras
+    if (nameLower.contains("polera") || nameLower.contains("personalizada")) return R.drawable.poleragamer_personalizada
+
+    // Fallback general por categorías
+    if (nameLower.contains("mesa")) return R.drawable.catan
+    if (nameLower.contains("accesorio")) return R.drawable.accesorios
+    if (nameLower.contains("silla")) return R.drawable.silla_gamer
+    if (nameLower.contains("consola")) return R.drawable.consolas
+
+    return R.drawable.product
 }
