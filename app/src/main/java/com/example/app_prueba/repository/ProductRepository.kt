@@ -1,21 +1,33 @@
 package com.example.app_prueba.repository
 
+import android.util.Log
 import com.example.app_prueba.data.model.AddToCartRequest
 import com.example.app_prueba.data.remote.RetrofitInstance
 
 class ProductRepository {
-    private val api = RetrofitInstance.api
+    // Variable privada pero accesible internamente
+    val api = RetrofitInstance.api
 
-    // Obtener productos del Backend
+    // Obtener productos (Lista)
     suspend fun getProductsFromApi() = api.listProducts()
 
-    // Obtener carrito del Backend (Necesita el token "Bearer ...")
-    suspend fun getCart(token: String) = api.getCart("Bearer $token")
+    // Obtener UN producto por ID
+    suspend fun getProductById(id: Int) = api.getProduct(id)
 
-    // Agregar al carrito en Backend
-    suspend fun addToCart(token: String, productId: Int, quantity: Int) =
-        api.addToCart("Bearer $token", AddToCartRequest(productId, quantity))
+    // Obtener carrito (Con LOG de depuración)
+    suspend fun getCart(token: String): retrofit2.Response<com.example.app_prueba.data.model.CartListResponse> {
+        val authHeader = "Bearer $token"
+        Log.d("RepoDebug", "Enviando al carrito HEADER: $authHeader") // <-- MIRA ESTO EN LOGCAT
+        return api.getCart(authHeader)
+    }
 
-    // Crear orden (Checkout)
+    // Agregar al carrito
+    suspend fun addToCart(token: String, productId: Int, quantity: Int): retrofit2.Response<com.example.app_prueba.data.model.SimpleResponse> {
+        val authHeader = "Bearer $token"
+        Log.d("RepoDebug", "Agregando al carrito HEADER: $authHeader")
+        return api.addToCart(authHeader, AddToCartRequest(productId, quantity))
+    }
+
+    // Checkout
     suspend fun checkout(token: String) = api.createOrder("Bearer $token")
 }

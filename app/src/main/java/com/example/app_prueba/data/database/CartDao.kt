@@ -2,25 +2,26 @@ package com.example.app_prueba.data.database
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Upsert
 import com.example.app_prueba.data.model.CartItem
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CartDao {
-    @Upsert
+    @Query("SELECT * FROM cart_items")
+    suspend fun getAllItems(): List<CartItem>
+
+    @Query("SELECT * FROM cart_items WHERE productCode = :code LIMIT 1")
+    suspend fun getItemByCode(code: String): CartItem?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertItem(item: CartItem)
 
     @Delete
     suspend fun deleteItem(item: CartItem)
 
-    @Query("SELECT * FROM cart_items")
-    fun getAllItems(): Flow<List<CartItem>>
-
-    @Query("SELECT * FROM cart_items WHERE productCode = :productCode LIMIT 1")
-    suspend fun getItemByCode(productCode: String): CartItem?
-
+    // --- LA FUNCIÓN QUE FALTABA ---
     @Query("DELETE FROM cart_items")
-    suspend fun clearAllItems() // Nueva función para vaciar el carrito
+    suspend fun deleteAll()
 }
