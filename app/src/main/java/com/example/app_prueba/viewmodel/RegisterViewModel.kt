@@ -1,105 +1,46 @@
 package com.example.app_prueba.viewmodel
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.app_prueba.application.LevelUpGamerApp
-import com.example.app_prueba.data.model.User
-import com.example.app_prueba.data.model.UserRegisterRequest
+import com.example.app_prueba.data.model.*
 import com.example.app_prueba.repository.UserRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.io.IOException
 
-class RegisterViewModel(application: Application) : AndroidViewModel(application) {
+data class RegisterUiState(
+    val isLoading: Boolean = false,
+    val isSuccess: Boolean = false,
+    val error: String? = null
+)
 
-    var email by mutableStateOf("")
-    var pass by mutableStateOf("")
-    var confirmPass by mutableStateOf("")
-    var name by mutableStateOf("")
-    var isOfAge by mutableStateOf(true)
-    var hasReferralCode by mutableStateOf(false)
-    var referralCode by mutableStateOf("")
-    var registerError by mutableStateOf<String?>(null)
-    var isLoading by mutableStateOf(false)
-
+class RegisterViewModel : ViewModel() {
     private val repository = UserRepository()
-    private val userDao = (application as LevelUpGamerApp).database.userDao()
 
-    fun onRegister(onSuccess: () -> Unit) {
-        // Validaciones locales
-        if (!isOfAge) {
-            registerError = "Debes ser mayor de 18 años."
-            return
-        }
-        if (email.isBlank()) {
-            registerError = "El correo es obligatorio."
-            return
-        }
-        if (!email.contains("@")) {
-            registerError = "El correo no es válido."
-            return
-        }
-        if (pass.length < 4) {
-            registerError = "La contraseña debe tener mínimo 4 caracteres."
-            return
-        }
-        if (pass != confirmPass) {
-            registerError = "Las contraseñas no coinciden."
-            return
-        }
+    private val _uiState = MutableStateFlow(RegisterUiState())
+    val uiState = _uiState.asStateFlow()
 
-        val hasDuocDiscount = email.lowercase().endsWith("@duoc.cl") || email.lowercase().endsWith("@duocuc.cl")
-
-        val request = UserRegisterRequest(
-            email = email.trim().lowercase(),
-            pass = pass,
-            name = if (name.isBlank()) null else name.trim(),
-            hasDuocDiscount = hasDuocDiscount
-        )
-
+    fun register(email: String, pass: String, name: String, hasDuocDiscount: Boolean) {
         viewModelScope.launch {
-            isLoading = true
-            registerError = null
+            _uiState.value = RegisterUiState(isLoading = true)
             try {
-                val response = repository.registerUser(request)
+                // Usamos la nueva función del repositorio
+                val response = repository.registerUser(email, pass, name, hasDuocDiscount)
 
-                if (response.isSuccessful && response.body() != null) {
-                    val body = response.body()!!
-                    if (body.success) {
-                        // Guardar usuario localmente
-                        val newUser = User(
-                            email = request.email,
-                            pass = request.pass,
-                            name = request.name,
-                            hasDuocDiscount = hasDuocDiscount
-                        )
-                        userDao.insert(newUser)
-
-                        // --- CORREGIDO: Pasamos el token al SessionViewModel ---
-                        // El endpoint de registro también devuelve el token en body.data.token
-                        SessionViewModel.onLoginSuccess(
-                            email = newUser.email,
-                            discount = newUser.hasDuocDiscount,
-                            token = body.data?.token // <-- Token del backend
-                        )
-
-                        registerError = null
-                        onSuccess()
-                    } else {
-                        registerError = body.message
+                if (response.isSuccessful && response.body()?.success == true) {
+                    // Si el registro devuelve token automáticamente, logueamos
+                    val responseData = response.body()?.data
+                    if (responseData != null) {
+                        SessionViewModel.userToken = responseData.token
+                        SessionViewModel.loggedInUser = responseData.user
                     }
+                    _uiState.value = RegisterUiState(isSuccess = true)
                 } else {
-                    registerError = "Error del servidor: ${response.code()} ${response.message()}"
+                    val msg = response.body()?.message ?: "Error al registrar"
+                    _uiState.value = RegisterUiState(error = msg)
                 }
-            } catch (e: IOException) {
-                registerError = "Error de red: No se pudo conectar al servidor."
             } catch (e: Exception) {
-                registerError = "Error inesperado: ${e.message}"
-            } finally {
-                isLoading = false
+                _uiState.value = RegisterUiState(error = "Error de red: ${e.message}")
             }
         }
     }

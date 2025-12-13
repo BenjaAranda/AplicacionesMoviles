@@ -1,28 +1,25 @@
 package com.example.app_prueba.repository
 
-import com.example.app_prueba.data.model.AuthResponse
-import com.example.app_prueba.data.model.LoginRequest
-import com.example.app_prueba.data.model.Pokemon // <-- 1. IMPORTAR MODELO
-import com.example.app_prueba.data.model.UserRegisterRequest
-import com.example.app_prueba.data.remote.RetrofitInstance
+import com.example.app_prueba.data.model.* // Modelos de tu App (Login, Register)
+import com.example.app_prueba.data.remote.RetrofitInstance // Tu Backend
+import com.example.app_prueba.data.remote.PokeApiInstance // PokeAPI (Restaurado)
 import retrofit2.Response
-import java.io.IOException
 
 class UserRepository {
-
+    // API de tu Backend (Flask)
     private val api = RetrofitInstance.api
+    // API de Pokémon
+    private val pokeApi = PokeApiInstance.api
 
-    suspend fun registerUser(user: UserRegisterRequest): Response<AuthResponse> {
-        return api.registerUser(user)
+    // --- TUS FUNCIONES DE BACKEND ---
+    suspend fun loginUser(email: String, pass: String): Response<LoginResponse> {
+        return api.login(LoginRequest(email, pass))
     }
 
-    suspend fun loginUser(request: LoginRequest): Response<AuthResponse> {
-        return api.loginUser(request)
+    suspend fun registerUser(email: String, pass: String, name: String, hasDuoc: Boolean): Response<RegisterResponse> {
+        return api.register(RegisterRequest(email, pass, name, hasDuoc))
     }
 
-    // --- 2. AÑADIR NUEVA FUNCIÓN PARA API EXTERNA ---
-    suspend fun getDitto(): Response<Pokemon> {
-        // La URL completa ("https://pokeapi.co/...") está en ApiService
-        return api.getDitto()
-    }
+    // --- FUNCIÓN RESTAURADA: POKEAPI ---
+    suspend fun getDitto() = pokeApi.getPokemon("ditto")
 }

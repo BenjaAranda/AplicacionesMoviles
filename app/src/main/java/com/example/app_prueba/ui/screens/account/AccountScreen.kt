@@ -1,333 +1,146 @@
 package com.example.app_prueba.ui.screens.account
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.CreditCard
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.SupportAgent
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect // <-- IMPORT AÑADIDO
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState // <-- IMPORT AÑADIDO
 import com.example.app_prueba.navigation.Routes
+import com.example.app_prueba.ui.components.Footer
 import com.example.app_prueba.viewmodel.ProfileViewModel
-import com.example.app_prueba.viewmodel.SessionViewModel
-
-val DarkBackground = Color(0xFF000000)
-val NeonGreen = Color(0xFF39FF14)
-val NeonPurple = Color(0xFF9D00FF)
-val TextColor = Color.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
-    val isLoggedIn = SessionViewModel.isLoggedIn
-    val currentUserEmail = SessionViewModel.currentUserEmail
+fun AccountScreen(navController: NavController, viewModel: ProfileViewModel = viewModel()) {
+    val user by viewModel.user.collectAsState()
 
-    if (isLoggedIn && currentUserEmail != null) {
-
-        var selectedOption by remember { mutableStateOf<String?>(null) }
-
-        // --- CÓDIGO AÑADIDO PARA RESETEAR ---
-        // 1. Observa la pila de navegación
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        // 2. Obtiene la ruta actual
-        val currentRoute = navBackStackEntry?.destination?.route
-
-        // 3. Este efecto se ejecuta cada vez que 'currentRoute' cambia
-        LaunchedEffect(currentRoute) {
-            // Si la ruta actual es la de esta pantalla (Account), resetea la selección
-            // ¡¡IMPORTANTE!! Asumo que tu ruta se llama 'Routes.Account.route'
-            // Si tiene otro nombre en tu 'Routes', ajústalo aquí.
-            if (currentRoute == Routes.Account.route) {
-                selectedOption = null
-            }
-        }
-        // --- FIN DEL CÓDIGO AÑADIDO ---
-
-        Scaffold(
-            containerColor = DarkBackground,
-            topBar = {
-                TopAppBar(
-                    title = { Text(text = "Mi Perfil", color = TextColor) },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = DarkBackground,
-                        scrolledContainerColor = DarkBackground
-                    )
-                )
-            }
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-
-                Text(
-                    text = "¡Hola, $currentUserEmail!",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = TextColor
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    ProfileOptionItem(
-                        text = "Datos Personales",
-                        icon = Icons.Default.Person,
-                        color = if (selectedOption == "Datos Personales") NeonGreen else NeonPurple,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            selectedOption = "Datos Personales"
-                            // TODO: navController.navigate(Routes.PersonalData.route)
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    ProfileOptionItem(
-                        text = "Editar Perfil",
-                        icon = Icons.Default.Edit,
-                        color = if (selectedOption == "Editar Perfil") NeonGreen else NeonPurple,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            selectedOption = "Editar Perfil"
-                            // TODO: navController.navigate(Routes.EditProfile.route)
-                        }
-                    )
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Mi Cuenta", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    ProfileOptionItem(
-                        text = "Mis Pedidos",
-                        icon = Icons.Default.ShoppingCart,
-                        color = if (selectedOption == "Mis Pedidos") NeonGreen else NeonPurple,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            selectedOption = "Mis Pedidos"
-                            navController.navigate(Routes.Cart.route)
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    ProfileOptionItem(
-                        text = "Seguimiento de Pedido",
-                        icon = Icons.Default.Download,
-                        color = if (selectedOption == "Seguimiento de Pedido") NeonGreen else NeonPurple,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            selectedOption = "Seguimiento de Pedido"
-                            navController.navigate(Routes.Home.route)
-                        }   // TODO: navController.navigate(Routes.OrderTracking.route)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    ProfileOptionItem(
-                        text = "Gestión de Cuenta",
-                        icon = Icons.Default.Settings,
-                        color = if (selectedOption == "Gestión de Cuenta") NeonGreen else NeonPurple,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            selectedOption = "Gestión de Cuenta"
-                            // TODO: navController.navigate(Routes.AccountManagement.route)
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    ProfileOptionItem(
-                        text = "Cambiar Tarjeta",
-                        icon = Icons.Default.CreditCard,
-                        color = if (selectedOption == "Cambiar Tarjeta") NeonGreen else NeonPurple,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            selectedOption = "Cambiar Tarjeta"
-                            // TODO: navController.navigate(Routes.PaymentMethods.route)
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    ProfileOptionItem(
-                        text = "Puntos",
-                        icon = Icons.Default.Star,
-                        color = if (selectedOption == "Puntos") NeonGreen else NeonPurple,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            selectedOption = "Puntos"
-                            navController.navigate(Routes.Points.route)
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    ProfileOptionItem(
-                        text = "Soporte Técnico",
-                        icon = Icons.Default.SupportAgent,
-                        color = if (selectedOption == "Soporte Técnico") NeonGreen else NeonPurple,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            selectedOption = "Soporte Técnico"
-                            navController.navigate(Routes.Contact.route)
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = { /* TODO: Mostrar diálogo de confirmación */ },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.error
-                    ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar",
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text("Eliminar Cuenta")
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = { profileViewModel.onLogout(navController) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = Color.White
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = "Cerrar Sesión",
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text("Cerrar Sesión")
-                }
-            }
-        }
-    }
-    else {
+            )
+        },
+        bottomBar = { Footer(navController) }
+    ) { paddingValues ->
+        // Usamos Column principal para organizar: Contenido Arriba (flexible) + Botón Abajo (fijo)
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(paddingValues)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Únete a la Comunidad",
-                style = MaterialTheme.typography.headlineLarge,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Inicia sesión o crea una cuenta para acceder a tu carrito y perfil.",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(32.dp))
 
-            Button(
-                onClick = { navController.navigate(Routes.Login.route) },
-                modifier = Modifier.fillMaxWidth()
+            // --- BLOQUE SUPERIOR (Información) ---
+            // Le damos weight(1f) para que ocupe todo el espacio disponible,
+            // empujando el botón hacia abajo, pero sin aplastarlo.
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()), // Hacemos scrollable por si la pantalla es chica
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Iniciar Sesión")
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(
+                    text = "Información de Usuario",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                if (user != null) {
+                    InfoRow(label = "Nombre", value = user?.name ?: "Sin nombre")
+                    Divider(modifier = Modifier.padding(vertical = 12.dp))
+                    InfoRow(label = "Email", value = user?.email ?: "")
+                    Divider(modifier = Modifier.padding(vertical = 12.dp))
+                    InfoRow(label = "ID Usuario", value = user?.id.toString())
+
+                    if (user?.hasDuocDiscount == true) {
+                        Divider(modifier = Modifier.padding(vertical = 12.dp))
+                        Text(
+                            "¡Tienes descuento DUOC activo!",
+                            color = Color(0xFF2E7D32),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    Text("No hay sesión activa", color = Color.Gray)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Inicia sesión para ver tus datos.", fontSize = 14.sp, color = Color.Gray)
+                }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedButton(
-                onClick = { navController.navigate(Routes.Register.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Crear Cuenta")
+
+            // --- BLOQUE INFERIOR (Botón) ---
+            // Al estar fuera del Column con weight, su altura es sagrada y no se aplasta.
+            Spacer(modifier = Modifier.height(16.dp)) // Separación segura
+
+            if (user != null) {
+                Button(
+                    onClick = {
+                        viewModel.logout()
+                        navController.navigate(Routes.Login.route) { popUpTo(0) }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFD32F2F), // Rojo fuerte manual
+                        contentColor = Color.White
+                    ),
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp) // Altura forzada y generosa
+                ) {
+                    Text("Cerrar Sesión", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
+            } else {
+                Button(
+                    onClick = { navController.navigate(Routes.Login.route) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2E7D32), // Verde fuerte manual
+                        contentColor = Color.White
+                    ),
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                ) {
+                    Text("Iniciar Sesión", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
 }
 
-
 @Composable
-fun ProfileOptionItem(
-    text: String,
-    icon: ImageVector,
-    color: Color,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = modifier
-            .aspectRatio(1.5f)
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        color = DarkBackground,
-        border = BorderStroke(2.dp, color)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = text,
-                tint = color,
-                modifier = Modifier.size(36.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = text,
-                color = TextColor,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
-            )
-        }
+fun InfoRow(label: String, value: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = label, fontSize = 14.sp, color = Color.Gray)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
     }
 }

@@ -24,8 +24,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(CartState())
     val uiState = _uiState.asStateFlow()
 
-    private val productRepository = ProductRepository()
-    // Mantenemos el DAO local para vaciarlo al cerrar sesión o como respaldo
+    private val repository = ProductRepository()
     private val cartDao = (application as LevelUpGamerApp).database.cartDao()
 
     init {
@@ -38,44 +37,37 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             val token = SessionViewModel.userToken
 
             if (token != null) {
-                // --- MODO ONLINE: Cargar desde AWS ---
                 try {
-                    val response = productRepository.getCart(token)
+                    val response = repository.getCart(token)
                     if (response.isSuccessful && response.body()?.success == true) {
                         val remoteItems = response.body()?.data ?: emptyList()
 
-                        // Convertimos los items del backend a nuestro modelo CartItem
+                        // Mapeamos respuesta del servidor a modelo local
                         val mappedItems = remoteItems.map {
                             CartItem(
-                                id = it.id,
-                                productCode = it.productId.toString(), // Usamos ID como código
+                                id = it.id, // ID del item en el carrito (Backend)
+                                productCode = it.productId.toString(),
                                 productName = it.name,
                                 productPrice = it.price,
                                 quantity = it.quantity,
-                                imageRes = 0 // La imagen se resolverá en la vista por nombre
+                                imageRes = 0
                             )
                         }
                         updatePrices(mappedItems)
-                    } else {
-                        Log.e("CartVM", "Error cargando carrito nube: ${response.message()}")
                     }
                 } catch (e: Exception) {
-                    Log.e("CartVM", "Error de red carrito", e)
+                    Log.e("CartVM", "Error cargando", e)
                 }
             } else {
-                // --- MODO OFFLINE: Cargar local (Opcional) ---
-                // Si no hay login, podrías cargar del DAO local
+                // Modo offline (opcional, limpia por ahora)
                 _uiState.value = CartState()
             }
             _uiState.value = _uiState.value.copy(isLoading = false)
         }
     }
 
-    // Calcular totales
     private fun updatePrices(items: List<CartItem>) {
         val subtotal = items.sumOf { it.productPrice * it.quantity }
-
-        // Descuento DUOC (20%) si aplica
         val discount = if (SessionViewModel.hasDuocDiscount) subtotal * 0.20 else 0.0
         val total = subtotal - discount
 
@@ -87,23 +79,63 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
-    // Funciones de modificar cantidad (Por ahora solo local o simulado,
-    // ya que requeriría endpoints de UPDATE en el backend)
+    // --- LÓGICA DE BOTONES ---
+
     fun increaseQuantity(item: CartItem) {
-        // Implementación ideal: llamar a API update quantity
-        // Por ahora, recargamos para no desincronizar
-        loadCart()
+        viewModelScope.launch {
+            val token = SessionViewModel.userToken ?: return@launch
+            // Optimistic update (actualiza UI rápido) o espera response.
+            // Aquí esperamos response para asegurar consistencia
+            try {
+                val newQty = item.quantity + 1
+                // Llamamos al PUT que creamos en backend
+                val res = repository.updateCartItemQuantity(token, item.id, newQty)
+                if (res.isSuccessful) {
+                    loadCart() // Recargamos para ver cambios
+                }
+            } catch (e: Exception) {
+                Log.e("CartVM", "Error aumentando", e)
+            }
+        }
     }
 
     fun decreaseQuantity(item: CartItem) {
-        loadCart()
+        viewModelScope.launch {
+            val token = SessionViewModel.userToken ?: return@launch
+            try {
+                if (item.quantity > 1) {
+                    // Si hay más de 1, restamos
+                    val res = repository.updateCartItemQuantity(token, item.id, item.quantity - 1)
+                    if (res.isSuccessful) loadCart()
+                } else {
+                    // Si es 1, BORRAMOS el item
+                    val res = repository.deleteCartItem(token, item.id)
+                    if (res.isSuccessful) loadCart()
+                }
+            } catch (e: Exception) {
+                Log.e("CartVM", "Error disminuyendo", e)
+            }
+        }
     }
 
     fun clearCart() {
         viewModelScope.launch {
-            cartDao.deleteAll() // Limpia local
-            _uiState.value = CartState() // Limpia UI
-            // Nota: Para limpiar la nube necesitarías un endpoint DELETE /cart
+            val token = SessionViewModel.userToken
+
+            // 1. Borrar en la nube
+            if (token != null) {
+                try {
+                    repository.clearCartCloud(token)
+                } catch (e: Exception) {
+                    Log.e("CartVM", "Error vaciando nube", e)
+                }
+            }
+
+            // 2. Borrar local
+            cartDao.deleteAll()
+
+            // 3. Actualizar UI
+            _uiState.value = CartState()
         }
     }
 }

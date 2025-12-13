@@ -9,14 +9,14 @@ import com.example.app_prueba.R
 import com.example.app_prueba.application.LevelUpGamerApp
 import com.example.app_prueba.data.model.CartItem
 import com.example.app_prueba.data.model.Product
-import com.example.app_prueba.repository.ProductRepository // <-- NUEVO: Para productos y carrito AWS
+import com.example.app_prueba.repository.ProductRepository
 import com.example.app_prueba.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+// Modelo local para la vista
 data class ProductCategory(
     val name: String,
     @DrawableRes val imageRes: Int
@@ -33,13 +33,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(HomeState())
     val uiState = _uiState.asStateFlow()
 
-    // DAOs locales (Los mantenemos por si quieres usar lógica híbrida, pero priorizaremos el backend)
-    private val productDao = (application as LevelUpGamerApp).database.productDao()
+    // DAOs locales
     private val cartDao = (application as LevelUpGamerApp).database.cartDao()
 
     // Repositorios
     private val userRepository = UserRepository()
-    private val productRepository = ProductRepository() // <-- Repositorio para el Backend
+    private val productRepository = ProductRepository()
 
     init {
         loadHomePageContent()
@@ -49,8 +48,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
-            // 1. CARGA DE API EXTERNA (PokeAPI - Tu código existente)
+            // 1. CARGA DE API EXTERNA (PokeAPI - Restaurado)
             val pokemonNameResult: String? = try {
+                // Ahora UserRepository sí tiene getDitto()
                 val response = userRepository.getDitto()
                 if (response.isSuccessful && response.body() != null) {
                     response.body()!!.name.replaceFirstChar {
@@ -64,7 +64,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             // 2. CARGA DE PRODUCTOS (BACKEND AWS)
-            // En lugar de productDao.getAllProducts(), llamamos a la API
             var featured: List<Product> = emptyList()
             var categoriesList: List<ProductCategory> = emptyList()
 
@@ -77,9 +76,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     // Tomamos productos para destacados
                     featured = remoteProducts.take(6)
 
-                    // --- Mapeo de Categorías (Tu lógica visual) ---
-                    // Como el backend solo manda nombres strings, usamos tu mapa local
-                    // para asignarles iconos bonitos.
+                    // Mapa de categorías
                     val categoryImages = mapOf(
                         "Juegos de Mesa" to R.drawable.catan,
                         "Accesorios" to R.drawable.accesorios,
@@ -89,12 +86,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         "Mouse" to R.drawable.mouse_logitech,
                         "Mousepad" to R.drawable.mousepad_razer,
                         "Poleras Personalizadas" to R.drawable.poleragamer_personalizada,
-                        // Fallback por si el backend trae una categoría nueva
                         "General" to R.drawable.consolas
                     )
 
                     categoriesList = remoteProducts
-                        .map { it.category } // Asegúrate que en Product.kt el campo sea 'category'
+                        .map { it.category }
                         .distinct()
                         .map { categoryName ->
                             ProductCategory(
@@ -106,13 +102,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
                 } else {
                     Log.e("HomeVM", "Error Backend: ${productsResponse.code()} - ${productsResponse.message()}")
-                    // Opcional: Si falla el backend, podrías intentar cargar del DAO local aquí
                 }
             } catch (e: Exception) {
                 Log.e("HomeVM", "Error Red Backend", e)
             }
 
-            // 3. ACTUALIZAR ESTADO (Fusionando todo)
+            // 3. ACTUALIZAR ESTADO
             _uiState.value = HomeState(
                 featuredProducts = featured,
                 categories = categoriesList,
@@ -124,29 +119,23 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addToCart(product: Product) {
         viewModelScope.launch {
-            // --- INTENTO DE AGREGAR AL BACKEND ---
-            // Asumimos que SessionViewModel tiene el token guardado estáticamente o en pref
+            // 1. NUBE
             val token = SessionViewModel.userToken
-
             if (!token.isNullOrEmpty()) {
                 try {
-                    // El backend usa ID (Int), asegurate que tu modelo Product tenga 'id'
                     val response = productRepository.addToCart(token, product.id, 1)
                     if (response.isSuccessful) {
                         Log.d("HomeVM", "Producto ${product.name} agregado al carrito NUBE")
-                    } else {
-                        Log.e("HomeVM", "Error agregando al carrito nube: ${response.message()}")
                     }
                 } catch (e: Exception) {
                     Log.e("HomeVM", "Excepción carrito nube", e)
                 }
             }
 
-            // --- LÓGICA LOCAL (RESPALDO) ---
-            // Mantenemos esto para que tu app siga funcionando offline o si no hay login
-            // Usamos 'code' o 'id' transformado a string para el DAO local
+            // 2. LOCAL (DAO)
             try {
-                val codeForLocal = if(product.code.isNotEmpty()) product.code else product.id.toString()
+                // Nota: Asegúrate de que tu modelo Product tenga 'code' o usa 'id.toString()'
+                val codeForLocal = product.id.toString()
 
                 val existingItem = cartDao.getItemByCode(codeForLocal)
                 if (existingItem != null) {

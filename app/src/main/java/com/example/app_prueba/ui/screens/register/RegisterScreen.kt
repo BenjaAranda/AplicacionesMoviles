@@ -1,154 +1,146 @@
 package com.example.app_prueba.ui.screens.register
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.app_prueba.navigation.Routes
 import com.example.app_prueba.viewmodel.RegisterViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController, vm: RegisterViewModel = viewModel()) {
+    val uiState by vm.uiState.collectAsState()
 
-    Column(
+    var email by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var hasDuocCode by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            navController.navigate(Routes.Home.route) {
+                popUpTo(Routes.Register.route) { inclusive = true }
+            }
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(Color(0xFF121212)) // Fondo oscuro
     ) {
-
-        Text("Crear Cuenta", style = MaterialTheme.typography.headlineLarge)
-        Spacer(modifier = Modifier.height(32.dp))
-
-        val customTextFieldColors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-            cursorColor = MaterialTheme.colorScheme.primary,
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
-        )
-
-        val primaryButtonColors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-        )
-
-        OutlinedTextField(
-            value = vm.email,
-            onValueChange = { vm.email = it },
-            label = { Text("Correo Electrónico") },
-            modifier = Modifier.fillMaxWidth(),
-            colors = customTextFieldColors,
-            isError = vm.registerError != null
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = vm.pass,
-            onValueChange = { vm.pass = it },
-            label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            colors = customTextFieldColors,
-            isError = vm.registerError != null
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = vm.confirmPass,
-            onValueChange = { vm.confirmPass = it },
-            label = { Text("Confirmar Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            colors = customTextFieldColors,
-            isError = vm.registerError?.contains("contraseñas") == true
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable { vm.isOfAge = !vm.isOfAge }
-                .padding(vertical = 4.dp)
+                .fillMaxSize()
+                .padding(32.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Checkbox(
-                checked = vm.isOfAge,
-                onCheckedChange = { vm.isOfAge = it },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Confirmo que soy mayor de 18 años")
-        }
+            Text("Registro", style = MaterialTheme.typography.headlineLarge, color = Color.White)
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { vm.hasReferralCode = !vm.hasReferralCode }
-                .padding(vertical = 4.dp)
-        ) {
-            Checkbox(
-                checked = vm.hasReferralCode,
-                onCheckedChange = { vm.hasReferralCode = it },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Tengo un código de referido")
-        }
-
-        if (vm.hasReferralCode) {
-            Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
-                value = vm.referralCode,
-                onValueChange = { vm.referralCode = it },
-                label = { Text("Código de Referido") },
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nombre Completo") },
                 modifier = Modifier.fillMaxWidth(),
-                colors = customTextFieldColors
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedContainerColor = Color.White.copy(alpha = 0.1f),
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
+                )
             )
-        }
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Correo Electrónico") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedContainerColor = Color.White.copy(alpha = 0.1f),
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
+                )
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Contraseña") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedContainerColor = Color.White.copy(alpha = 0.1f),
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
+                )
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = { Text("Confirmar Contraseña") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedContainerColor = Color.White.copy(alpha = 0.1f),
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
+                )
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        vm.registerError?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
             Spacer(modifier = Modifier.height(16.dp))
-        }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = hasDuocCode, onCheckedChange = { hasDuocCode = it })
+                Text("Tengo código DUOC (Descuento)", color = Color.White)
+            }
 
-        Button(
-            // --- CORRECCIÓN: Se envuelve la llamada a onRegister y la navegación en el lambda onClick ---
-            onClick = {
-                vm.onRegister {
-                    // Este bloque se ejecuta solo si el registro es exitoso
-                    navController.navigate(Routes.Home.route) {
-                        popUpTo(Routes.Login.route) { inclusive = true }
+            if (uiState.error != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(uiState.error!!, color = Color.Red, fontSize = 14.sp)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    if(password == confirmPassword) {
+                        vm.register(email, password, name, hasDuocCode)
                     }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading
+            ) {
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Registrarse")
                 }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = primaryButtonColors,
-            // Deshabilitar el botón si no es mayor de edad para dar feedback visual
-            enabled = vm.isOfAge
-        ) {
-            Text("Registrarse")
-        }
+            }
 
-        TextButton(onClick = { navController.popBackStack() }) {
-            Text("¿Ya tienes cuenta? Inicia Sesión")
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(onClick = { navController.navigate(Routes.Login.route) }) {
+                Text("Ya tengo cuenta", color = Color.White)
+            }
         }
     }
 }
