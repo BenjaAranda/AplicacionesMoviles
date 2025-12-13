@@ -1,49 +1,34 @@
 package com.example.app_prueba.viewmodel
 
+import com.example.app_prueba.data.model.BenefitItem
+import com.example.app_prueba.data.model.HistoryItem
+import com.example.app_prueba.data.model.RewardItem
 
 data class PointUiState(
-    // --- Resumen ---
-    val pointsAvailable: Int = 0,
-    val pointsThisYear: Int = 0,
-    val pointsToCaducate: String = "0 (en 0 días)",
+    // Estado de carga y error
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+
+    // Datos del Resumen
     val currentLevel: String = "Bronce",
-    val progress: Float = 0.0f, // Un valor de 0.0f a 1.0f
+    val progress: Float = 0.0f,
+    val pointsThisYear: String = "0",
+    val pointsAvailable: String = "0",
+    val pointsToCaducate: String = "0",
 
-    // --- Reglas ---
-    val rules: List<String> = emptyList(),
+    // Datos de Reglas (pueden ser fijas o venir de API)
+    val rules: List<String> = listOf(
+        "Gana 1 punto por cada $1000 de compra.",
+        "Los puntos vencen a los 12 meses.",
+        "Sube de nivel para ganar multiplicadores."
+    ),
 
-    // --- Historial ---
-    val historyFilters: List<String> = listOf("Todos", "Ganados", "Usados", "Anulados"),
-    val selectedHistoryFilter: String = "Todos",
-    val historyItems: List<HistoryItem> = emptyList(), // La lista filtrada
+    // Historial
+    val historyFilters: List<String> = listOf("Todo", "Ganados", "Canjeados", "Vencidos"),
+    val selectedHistoryFilter: String = "Todo",
+    val historyItems: List<HistoryItem> = emptyList(),
 
-    // --- Beneficios ---
+    // Beneficios y Recompensas
     val benefits: List<BenefitItem> = emptyList(),
-
-    // --- Recompensas ---
     val rewards: List<RewardItem> = emptyList()
-)
-
-// Clases de datos individuales que usa el UiState
-data class HistoryItem(
-    val id: String,
-    val date: String,
-    val event: String,
-    val points: String,
-    val isGain: Boolean,
-    val expires: String,
-    val type: String //
-)
-
-data class BenefitItem(
-    val id: String,
-    val title: String,
-    val description: String
-)
-
-data class RewardItem(
-    val id: String,
-    val name: String,
-    val cost: String, // Ej: "200 pts"
-    val costNumeric: Int // Ej: 200
 )

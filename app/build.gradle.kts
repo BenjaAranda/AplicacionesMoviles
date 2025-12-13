@@ -113,4 +113,6 @@ dependencies {
 // OkHttp (incluye logging)
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
+
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
 }
