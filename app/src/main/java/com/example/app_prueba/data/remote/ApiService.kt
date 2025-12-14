@@ -49,4 +49,22 @@ interface ApiService {
     // --- ORDENES ---
     @POST("orders")
     suspend fun createOrder(@Header("Authorization") token: String): Response<SimpleResponse>
+    // --- SISTEMA DE PUNTOS  ---
+
+    @GET("points/summary")
+    suspend fun getPointsSummary(): Response<UserPointsSummary>
+
+    @GET("points/history")
+    suspend fun getPointsHistory(
+        @Query("filter") filter: String
+    ): Response<List<HistoryItem>>
+
+    @GET("points/benefits")
+    suspend fun getBenefits(): Response<List<BenefitItem>>
+
+    @GET("points/rewards")
+    suspend fun getRewards(): Response<List<RewardItem>>
+
+    @POST("points/redeem/{rewardId}")
+    suspend fun redeemReward(@Path("rewardId") rewardId: String): Response<Unit>
 }
